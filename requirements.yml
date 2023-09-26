@@ -2,3 +2,5 @@ collections:
 - name: kubernetes.core
 - name: ansible.posix
 - name: community.vmware
+- name: community.okd
+- name: epfl_si.actions
