@@ -3,12 +3,6 @@
     - access.yml
     - ssh-public-keys.yml
 
-- name: "`{{ ansible_user }}` is password-less sudoer"
-  copy:
-    dest: "/etc/sudoers.d/{{ ansible_user }}"
-    content: |
-      {{ ansible_user }} ALL=(ALL) NOPASSWD: ALL
-
 - name: "`{{ ansible_user }}`'s `.ssh/authorized_keys`"
   ansible.posix.authorized_key:
     user: "{{ ansible_user }}"
