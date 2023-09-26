@@ -46,6 +46,16 @@
         VMWARE_VALIDATE_CERTS: false
 
 - include_tasks:
+    file: bastion-access.yml
+    apply:
+      tags:
+        - bastion
+        - bastion.access
+  tags:
+    - bastion
+    - bastion.access
+
+- include_tasks:
     file: bastion-software.yml
     apply:
       tags:
