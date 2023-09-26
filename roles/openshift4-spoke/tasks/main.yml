@@ -55,6 +55,8 @@
         - openshift
         - openshift.spoke
         - openshift.spoke.backdoor
+      environment:
+        KUBECONFIG: "{{ xaasible_kubeconfig }}"  # Unless stipulated otherwise inside spoke-backdoor.yml
   tags:
     - openshift
     - openshift.spoke
