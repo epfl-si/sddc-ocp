@@ -31,3 +31,5 @@ ssh_public_keys_people:
   giovanni.cangiani@epfl.ch: 
     # https://github.com/multiscan.keys
     - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCyCV5/WeP1C1MQkuv+O3mUrhD+NfkRZgdqzAKEutxwzZPBLyGWlfaW5NHQvWR1n7pOt2zU973fSlVbQsKzvUbs+jUu3P5mRNYrT5IAola2eJrOmn9bFeSNueVNXWFbP84vgKq0Ev2QOKeXGi0MufWP8C5mFTtB1ZLH0QNjNd+zWuvuh3V4CuorGhbnHJWbHUYDJiFFZLyN8n6nvH5Y2Glngev13pyRrOmtSvylOkYvqolKausS+VzOFfJAXPKvKdTUyJGb/iLpmGdxwjyf5s9nL+NYyncPid919XVDosh6KiPl4fj+UxLYqWIo4voqnhQGYlUElmj91u7SyVhCPUI7
+  quentin.vasseur@epfl.ch:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMVo2NOH+2BfRZut3Ka0hajDyBOuxeWkkGWvruh2jtJq
