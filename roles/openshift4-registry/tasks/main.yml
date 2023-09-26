@@ -1,4 +1,4 @@
-- name: Install Quay
+- name: Quay
   when: >-
     "openshift_quay_clusters" in group_names
   include_tasks:
@@ -12,8 +12,9 @@
     - openshift
     - openshift.quay
     - openshift.quay.server
+    - openshift.quay.server.organization.delete
 
-- name: Install Quay bridge
+- name: Quay bridge
   include_tasks:
     file: quay-bridge.yml
     apply:
@@ -25,3 +26,4 @@
     - openshift
     - openshift.quay
     - openshift.quay.bridge
+    - openshift.quay.bridge.renew-token

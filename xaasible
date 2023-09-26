@@ -57,6 +57,17 @@ again.
 PLEASE_INSTALL_OPENSSL
 }
 
+ensure_curl () {
+    curl --version > /dev/null || fatal <<'PLEASE_INSTALL_CURL'
+
+The `curl` command line tool is required. Bailing out.
+
+Please install the `curl` command-line tool on your system, and try
+again.
+
+PLEASE_INSTALL_CURL
+}
+
 
 inventories () {
     echo "-i inventory/openshift-0.yml"
@@ -69,6 +80,7 @@ set -e
 ensure_ansible
 ensure_oc
 ensure_openssl
+ensure_curl
 playbook_flags="$(ansible_flag_set_var_homedir xaasible_dir)"
 
 mode=ansible-playbook

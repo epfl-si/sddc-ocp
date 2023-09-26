@@ -2,11 +2,28 @@ quay_namespace: redhat-quay
 quay_hostname: si-quay.epfl.ch
 quay_pod_names: >-
   {{ lookup("pipe",
-  "env KUBECONFIG={{ xaasible_kubeconfig }} oc -n {{ quay_namespace }}
+  "env KUBECONFIG={{ ansible_oc_kubeconfig }} oc -n {{ ansible_oc_namespace }}
   get pod -o name
   | sed 's|^pod/||'
   | grep quay-app | grep -v quay-app-upgrade
   ").split()
   }}
-quay_bridge_grantor_username: quay-bridge
-quay_ansible_oc_connection_vars:
+quay_bridge_organization_name: epfl_si
+quay_bridge_organization_email: noreply@epfl.ch
+quay_bridge_oauth_app_name: quay-bridge
+
+quay_bridge_quay_cluster: "{{ inventory_hub_cluster | default(inventory_hostname) }}"
+quay_bridge_our_clusterid: >-
+  {{ inventory_hostname | regex_replace("[.].*$", "") }}
+# As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.9/html/manage_red_hat_quay/quay-bridge-operator#setting-up-quay-for-qbo point 7 (translated into OAuthese):
+quay_bridge_token_scopes: >-
+  org:admin
+  repo:admin
+  repo:create
+  repo:read
+  repo:write
+  user:admin
+  user:read
+quay_bridge_token_expiration_delay_seconds: 315576000
+
+quay_bridge_secret_name: quay-bridge-oauth-token

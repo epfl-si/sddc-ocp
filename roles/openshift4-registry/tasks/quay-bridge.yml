@@ -1,4 +1,5 @@
-- include_vars: "{{ item }}"
+- tags: always
+  include_vars: "{{ item }}"
   with_items:
     - quay-vars.yml
     - versions.yml
@@ -26,3 +27,108 @@
   changed_when: false
   shell:
       cmd: oc get QuayIntegration
+
+- name: QuayIntegration object
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: quay.redhat.com/v1
+      kind: QuayIntegration
+      metadata:
+        name: "{{ quay_bridge_quay_cluster }}"
+      spec:
+        clusterID: "{{ quay_bridge_our_clusterid }}"
+        credentialsSecret:
+          # to be created / updated below
+          namespace: openshift-operators
+          name: "{{ quay_bridge_secret_name }}"
+        quayHostname: "https://{{ quay_hostname }}"
+
+##################################################################################
+
+- tags: always
+  name: Check whether there is a currently valid token
+  changed_when: false
+  failed_when: false
+  register: _quay_bridge_check_token
+  no_log: true   # Here there be tokens
+  shell:
+    cmd: |
+      set -e -x
+      token=$(oc -n openshift-operators extract secret/{{ quay_bridge_secret_name }} \
+        --to=- --keys=token \
+        | tail -1)
+      if [ -z "$token" ]; then
+        echo "state: no_token"
+        exit 0
+      fi
+
+      echo "previous_token: $token"
+      if curl -sf -H "Authorization: Bearer $token" https://{{ quay_hostname }}/api/v1/user/logs >&2; then
+        echo "state: still valid"
+      else
+        echo "state: invalid"
+      fi
+
+- tags: openshift.quay.bridge.renew-token
+  vars:
+    _checked: >-
+      {{ (_quay_bridge_check_token.stdout if _quay_bridge_check_token is success
+      else "state: no_token")
+      | from_yaml }}
+  when: >-
+    (_checked.state != "still valid")
+    or
+    ("openshift.quay.bridge.renew-token" in ansible_run_tags)
+  block:
+    - name: "Renew OAuth token in the Quay instance of {{ quay_bridge_quay_cluster }}"
+      vars:
+        ansible_connection: oc
+        ansible_oc_kubeconfig: "{{ hostvars[quay_bridge_quay_cluster].xaasible_kubeconfig }}"
+        ansible_oc_namespace: "{{ quay_namespace }}"
+        ansible_oc_pod: "{{ quay_pod_names[0] }}"
+        ansible_oc_container: "quay-app"
+        ansible_remote_tmp: /tmp
+        ansible_python_interpreter: /usr/bin/python3
+      register: _quay_bridge_token
+      flask_script:
+        script: |
+          from base64 import b64encode
+
+          from data.database import User, OAuthApplication, OAuthAccessToken
+          from data.model.organization import get_organization
+          from data.model.oauth import create_user_access_token, ACCESS_TOKEN_PREFIX_LENGTH
+
+          org_name       = "{{ quay_bridge_organization_name }}"
+          oauth_app_name = "{{ quay_bridge_oauth_app_name }}"
+          oauth_scope    = "{{ quay_bridge_token_scopes }}"
+          expires_in     =  {{ quay_bridge_token_expiration_delay_seconds }}
+
+          org = get_organization(org_name)
+          oauth_app = OAuthApplication.select().join(User).where(
+               User.username == org_name, OAuthApplication.name == oauth_app_name).get()
+
+          {% if "previous_token" in _checked %}
+          previous_token = "{{ _checked.previous_token }}"
+          delete = OAuthAccessToken.delete().where(
+            OAuthAccessToken.token_name == previous_token[:ACCESS_TOKEN_PREFIX_LENGTH])
+          signal_changed("Deleted %d %s token(s)" % (delete.execute(),
+                                                     "{{ _checked.state }}"))
+          {% endif %}
+
+          created, access_token = create_user_access_token(
+                org, oauth_app.client_id,
+                oauth_scope, expires_in=expires_in)
+          signal_changed("New token created with ID %d" % created.id)
+          result['access_token_base64'] = b64encode(access_token.encode('ascii'))
+
+    - name: OpenShift Secret containing the new token
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            namespace: openshift-operators   # As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.9/html/manage_red_hat_quay/quay-bridge-operator#creating-ocp-secret-for-oauth-token
+            name: "{{ quay_bridge_secret_name }}"
+          data:
+            token: >-
+              {{ _quay_bridge_token.access_token_base64 }}

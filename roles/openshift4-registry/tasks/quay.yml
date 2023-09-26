@@ -1,4 +1,5 @@
-- include_vars: "{{ item }}"
+- tags: always
+  include_vars: "{{ item }}"
   with_items:
     - quay-vars.yml
     - versions.yml
@@ -140,11 +141,83 @@
     ansible_oc_container: "quay-app"
     ansible_remote_tmp: /tmp
     ansible_python_interpreter: /usr/bin/python3
+
+  # 💡 To explore the Flask object model, try
+  #
+  #   oc -n redhat-quay exec -it $(oc -n redhat-quay get pod -o name |grep -e -quay-app- | head -1) -- flask shell
+  #
+  #   import data
+  #   import peewee
+  #   [getattr(data.database, t) for t in dir(data.database)
+  #    if isinstance(getattr(data.database, t), peewee.ModelBase) ]
+  #
+  # Choose one of the `peewee.ModelBase` instances so returned, and then say e.g.
+  #
+  #   list(data.database.OAuthApplication.select())
+  #
   block:
-    - name: "{{ quay_bridge_grantor_username }} user"
-      ansible.builtin.command:
-        argv:
-          - flask
-          - shell
-        stdin:
-          print("coucou")
+    - name: "Delete {{ quay_bridge_organization_name }} organization"
+      tags:
+        - openshift.quay.server.organization.delete
+      when: >-
+        "openshift.quay.server.organization.delete" in ansible_run_tags
+      flask_script:
+        script: |
+          from data.model.user import User, delete_user
+
+          org_name = "{{ quay_bridge_organization_name }}"
+
+          try:
+            if delete_user(User.get(User.username == org_name), []):
+              signal_changed("Deleted organization (user) %s" % org_name)
+            else:
+              raise "Unable to delete organization (user) %s" % org_name
+          except User.DoesNotExist:
+            log("User (organization) %s not found" % org_name)
+            pass
+
+    - name: "{{ quay_bridge_organization_name }} organization"
+      flask_script:
+        postcondition_class: |
+          from data.model import user, InvalidOrganizationException
+          from data.model.organization import get_organization
+
+          org_name = "{{ quay_bridge_organization_name }}"
+          org_email = "{{ quay_bridge_organization_email }}"
+
+          class QuayOrganization(Postcondition):
+            def holds(self):
+              try:
+                get_organization(org_name)
+                return True
+              except InvalidOrganizationException:
+                return False
+
+            def enforce(self):
+              # Paraphrased from `data.model.organization.create_organization`,
+              # except without the part where an organization must have an owner:
+              org = user.create_user_noverify(
+                org_name, org_email, email_required=True, is_possible_abuser=False)
+              org.organization = True
+              org.save()
+              signal_changed("%s organization created" % org_name)
+
+    - name: "OAuth application for {{ quay_bridge_organization_name }} organization"
+      flask_script:
+        postcondition_class: |
+          from data.database import OAuthApplication, User
+          from data.model.organization import get_organization
+          from data.model.oauth import create_application
+
+          org_name       = "{{ quay_bridge_organization_name }}"
+          oauth_app_name = "{{ quay_bridge_oauth_app_name }}"
+
+          class OAuthApplicationPostcondition(Postcondition):
+            def holds(self):
+              return 1 == len(
+                OAuthApplication.select().join(User)
+                .where(User.username == org_name, OAuthApplication.name == oauth_app_name))
+
+            def enforce(self):
+              org = get_organization(org_name)
+              create_application(org, oauth_app_name, "", "")
