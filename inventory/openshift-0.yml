@@ -9,7 +9,7 @@ bastions:
       # /keybase/team/epfl_idevfsd/OpenShift-4/vsphere-credentials.yml :
       inventory_vsphere_name: vsphere-test
       inventory_vsphere_credentials_keybase_file: >-
-        /keybase/team/epfl_idevfsd/OpenShift-4/vsphere-credentials-test.yml
+        /keybase/team/epfl_ocpnext.test/vsphere-credentials.yml
       # Should contain keys `host`, `user` and `password`. ⚠ `user`
       # must be the fully qualified name, i.e.
       # `INTRANET\vsissp-ocp-svc-t-01` rather than
@@ -38,7 +38,7 @@ openshift_clusters:
       hosts:
         mgmt.ocp-test.epfl.ch:
           inventory_bastion: bastion-ocp-t
-          inventory_quay_s3_credentials_keybase_file: /keybase/team/epfl_idevfsd/OpenShift-4/scality-quay-bucket.yml
+          inventory_quay_s3_credentials_keybase_file: /keybase/team/epfl_ocpnext.test/scality-quay-bucket.yml
     openshift_spoke_clusters:
       hosts:
         iam.ocp-test.epfl.ch:
