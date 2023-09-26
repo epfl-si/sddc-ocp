@@ -2,9 +2,11 @@ quay_namespace: redhat-quay
 quay_hostname: si-quay.epfl.ch
 quay_pod_names: >-
   {{ lookup("pipe",
-  KUBECONFIG={{ xaasible_kubeconfig }} oc -n {{ quay_namespace }}
+  "env KUBECONFIG={{ xaasible_kubeconfig }} oc -n {{ quay_namespace }}
   get pod -o name
   | sed 's|^pod/||'
   | grep quay-app | grep -v quay-app-upgrade
   ").split()
   }}
+quay_bridge_grantor_username: quay-bridge
+quay_ansible_oc_connection_vars:

@@ -130,4 +130,21 @@
   until: _oc_exec_quay_app is success
   shell:
     cmd: |
-      oc -n {{ quay_namespace}} exec -it {{ quay_pod_names[0] }} -- true
+      oc -n {{ quay_namespace}} exec -i {{ quay_pod_names[0] }} -- true
+
+- vars:
+    ansible_connection: oc
+    ansible_oc_kubeconfig: "{{ xaasible_kubeconfig }}"
+    ansible_oc_namespace: "{{ quay_namespace }}"
+    ansible_oc_pod: "{{ quay_pod_names[0] }}"
+    ansible_oc_container: "quay-app"
+    ansible_remote_tmp: /tmp
+    ansible_python_interpreter: /usr/bin/python3
+  block:
+    - name: "{{ quay_bridge_grantor_username }} user"
+      ansible.builtin.command:
+        argv:
+          - flask
+          - shell
+        stdin:
+          print("coucou")
