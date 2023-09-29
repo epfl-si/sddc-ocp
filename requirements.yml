@@ -4,3 +4,4 @@ collections:
 - name: community.vmware
 - name: community.okd
 - name: epfl_si.actions
+  version: ">=0.3.1"
