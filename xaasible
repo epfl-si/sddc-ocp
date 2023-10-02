@@ -19,9 +19,10 @@ cd "$(cd $(dirname "$0"); /bin/pwd)"
 
 ensure_ansible () {
     if ! test -f ansible-deps-cache/.versions 2>/dev/null; then
+        ensure_libxmlsec1
         curl https://raw.githubusercontent.com/epfl-si/ansible.suitcase/master/install.sh | \
             SUITCASE_DIR=$PWD/ansible-deps-cache \
-            SUITCASE_PIP_EXTRA="bcrypt passlib kubernetes pyvmomi ldap3" \
+            SUITCASE_PIP_EXTRA="bcrypt passlib kubernetes pyvmomi ldap3 python3-saml" \
             SUITCASE_ANSIBLE_VERSION=6.3.0 \
             SUITCASE_ANSIBLE_REQUIREMENTS=requirements.yml \
             bash -x
@@ -29,6 +30,43 @@ ensure_ansible () {
 
     . "$PWD"/ansible-deps-cache/lib.sh
     ensure_ansible_runtime
+}
+
+ensure_libxmlsec1 () {
+    local xmlsec1_version="$(pkg-config --print-provides xmlsec1)"
+    local macosx_downgrade_bugware_explainer="
+Because of some (temporary?) lack of maintenance in python-xmlsec (see
+https://github.com/xmlsec/python-xmlsec/issues/254 ), you have to make
+sure to install an older version:
+
+   wget -O /tmp/libxmlsec1.rb https://raw.githubusercontent.com/Homebrew/homebrew-core/7f35e6ede954326a10949891af2dba47bbe1fc17/Formula/libxmlsec1.rb
+   brew install --formula /tmp/libxmlsec1.rb
+   brew pin libxmlsec1
+
+"
+    case "$xmlsec1_version" in
+        "")
+            cat >&2 <<'PLEASE_INSTALL_XMLSEC1'
+Fatal: libxmlsec1 (+ development kit) is required for python3-saml.
+PLEASE_INSTALL_XMLSEC1
+            case "$(uname -s)" in
+                Linux)
+                    echo >&2; echo >&2 'Bailing out.' ;;
+                Darwin)
+                    echo >&2 "$macosx_downgrade_bugware_explainer" ;;
+            esac
+            exit 1;;
+
+        *"= 1.3."*)
+            case "$(uname -s)" in
+                Darwin)
+                    cat >&2 <<"PLEASE_DOWNGRADE_XMLSEC1"
+Fatal: version 1.3.x of xmlsec1 detected; please downgrade.
+$macosx_downgrade_bugware_explainer
+PLEASE_DOWNGRADE_XMLSEC1
+                    exit 1 ;;
+            esac ;;
+    esac
 }
 
 ensure_oc () {
