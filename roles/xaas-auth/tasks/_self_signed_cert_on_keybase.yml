@@ -1,0 +1,15 @@
+- name: Generate '{{ _key }}'
+  shell:
+    creates: '{{ satosa_keybase.oidc_private_key }}'
+    cmd: openssl genrsa 2048 > {{ satosa_keybase.oidc_private_key }}
+  tags: satosa.keys
+
+- name: Generate '{{ _cert }}'
+  shell:
+    creates: '{{ _cert }}'
+    cmd: >-
+      openssl req -x509 -new -key {{ _key }}
+      -batch -subj '/CN={{ _cn }}'
+      -days 3650
+      -out {{ _cert }}
+  tags: satosa.keys

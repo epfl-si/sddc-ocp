@@ -1,0 +1,193 @@
+# Kubernetes objects to run SATOSA in a cluster
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ satosa_namespace }}
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: satosa-saml-signing-keys
+  namespace: '{{ satosa_namespace }}'
+type: Opaque
+data:
+  satosa.key: >-
+    {{ lookup("pipe", "keybase fs read %s" % satosa_keybase.saml_private_key) | b64encode | indent(4) }}
+  satosa.crt: >-
+    {{ lookup("pipe", "keybase fs read %s" % satosa_keybase.saml_certificate) | b64encode | indent(4) }}
+  oidc.key: >-
+    {{ lookup("pipe", "keybase fs read %s" % satosa_keybase.oidc_private_key) | b64encode | indent(4) }}
+  oidc.crt: >-
+    {{ lookup("pipe", "keybase fs read %s" % satosa_keybase.oidc_certificate) | b64encode | indent(4) }}
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: satosa-tequila-certificate
+  namespace: '{{ satosa_namespace }}'
+type: Opaque
+data:
+  tequila.pem: |-
+    {{ lookup("pipe", "openssl s_client -connect {{ satosa_tequila_hostname }}:443 \
+                       -showcerts </dev/null 2>/dev/null | \
+                       sed -e '/END CERTIFICATE/q' 2>/dev/null | openssl x509")
+             | b64encode | indent(4) }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: satosa
+  namespace: {{ satosa_namespace }}
+data:
+  proxy_conf.yaml: |
+    {{ lookup("template", "proxy_conf.yaml") | indent(4) }}
+  openid_connect_frontend.yaml: |
+    {{ lookup("template", "satosa-modules/openid_connect_frontend.yaml") | indent(4) }}
+  static_attributes_microservice.yaml: |
+    {{ lookup("template", "satosa-modules/static_attributes_microservice.yaml") | indent(4) }}
+  saml2_backend.yaml: |
+    {{ lookup("template", "satosa-modules/saml2_backend.yaml") | indent(4) }}
+  custom-entrypoint.sh: |
+    {{ lookup("template", "custom-entrypoint.sh") | indent(4) }}
+  satosa_wsgi.py: |
+    {{ lookup("template", "satosa_wsgi.py") | indent(4) }}
+  internal_attributes.yaml: |
+    {{ lookup("template", "internal_attributes.yaml") | indent(4) }}
+  clients.json: |
+    {{ oidc_clients |
+       map_dict_defaults({'token_endpoint_auth_method': 'none'}) |
+       dictify('client_id') |
+       to_json | indent(4) }}
+
+---
+# This ConfigMap provides a suitable configuration directory for
+# PySAML2 to understand Tequila's SAML “attribute statements”.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: attribute-maps-for-pysaml2
+  namespace: {{ satosa_namespace }}
+data:
+  # The contents of this directory should conform to
+  # https://pysaml2.readthedocs.io/en/latest/howto/config.html?highlight=config#attribute-map-dir
+  # There is one important detail that that documentation almost
+  # completely glosses over: there can be no two `attribute_maps`
+  # Python definitions with the same `MAP.identifier`, lest one of
+  # them clobber the other! (See e.g.
+  # https://github.com/IdentityPython/pysaml2/blob/master/src/saml2/attribute_converter.py#L138)
+  # This is why `tequila.py` has to “extend” PySAML2's `saml_uri.py` (see
+  # the template of the former for details).
+  tequila.py: |
+    {{ lookup("template", "attributemaps/tequila.py") | indent(4) }}
+
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: satosa
+  namespace: {{ satosa_namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: satosa
+  template:
+    metadata:
+      labels:
+        service: satosa
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: {{ satosa_run_as_user }}
+      containers:
+        - name: satosa
+          image: {{ satosa_image }}
+          command:
+            - bash
+            - -x
+            - /config/custom-entrypoint.sh
+            ## Comment the above two lines and uncomment below
+            ## to force the container to start up (for debugging
+            ## purposes):
+            # - sleep
+            # - "36000"
+          volumeMounts:
+            - name: config
+              subPath: proxy_conf.yaml
+              mountPath: /etc/satosa/proxy_conf.yaml
+            - name: config
+              mountPath: /config
+            - name: config
+              mountPath: /site-python/epfl
+            - name: attributemaps
+              mountPath: /attributemaps
+            - name: signing-keys
+              mountPath: /saml2-backend-secrets
+          env:
+            - name: PYTHONPATH
+              value: /site-python
+          ## Uncomment the following lines to get a running (albeit useless) pod for debugging purposes:
+#          command:
+#            - bash
+#            - -c
+#            - "sleep 36000"
+          ## 💡 From a `kubectl exec` prompt, you can then run
+          ##
+          ##    /usr/local/bin/docker-entrypoint.sh gunicorn -b0.0.0.0:8080 satosa.wsgi:app
+          ##
+          ## to get the same behavior that the pod would normally run.
+      ports:
+        - containerPort: 8080
+          name: http
+      volumes:
+        - name: config
+          configMap:
+            name: satosa
+        - name: attributemaps
+          configMap:
+            name: attribute-maps-for-pysaml2
+        - name: signing-keys
+          secret:
+            secretName: satosa-saml-signing-keys
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: satosa
+  namespace: {{ satosa_namespace }}
+spec:
+  selector:
+    service: satosa
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: satosa
+  namespace: {{ satosa_namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: 'false'
+spec:
+  rules:
+    - host: {{ satosa_hostname }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: 
+                name: satosa
+                port: 
+                  number: 80

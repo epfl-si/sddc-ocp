@@ -1,0 +1,30 @@
+- tags: always
+  include_vars: satosa-vars.yml
+
+- include_tasks:
+    file: _self_signed_cert_on_keybase.yml
+    apply:
+      tags:
+        - satosa
+        - satosa.keys
+  tags:
+    - satosa
+    - satosa.keys
+  vars:
+    _key: "{{ item.key }}"
+    _cert: "{{ item.cert }}"
+    _cn: "{{ item.cn }}"
+  with_items:
+  - key: "{{ satosa_keybase.oidc_private_key }}"
+    cert: "{{ satosa_keybase.oidc_certificate }}"
+    cn: "{{ satosa_hostname }}"
+  - key: "{{ satosa_keybase.saml_private_key }}"
+    cert: "{{ satosa_keybase.saml_certificate }}"
+    cn: "{{ satosa_hostname }}"
+- name: SATOSA Kubernetes objects
+  kubernetes.core.k8s:
+    definition: '{{ item }}'
+  with_items: >-
+    {{ lookup('template', 'satosa-k8s-objects.yaml')
+    | from_yaml_all }}
+  tags: satosa.k8s

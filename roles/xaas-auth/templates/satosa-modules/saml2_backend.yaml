@@ -1,0 +1,37 @@
+# config/openid_connect_frontend.yaml for SATOSA
+module: satosa.backends.saml2.SAMLBackend
+name: "{{ satosa_tequila_saml_entity_name }}"
+config:
+  mirror_force_authn: no
+  memorize_idp: no
+  use_memorized_idp_when_force_authn: no
+
+  sp_config:
+    key_file: /saml2-backend-secrets/satosa.key
+    cert_file: /saml2-backend-secrets/satosa.crt
+    organization: {display_name: EPFL, name: EPFL, url: 'https://www.epfl.ch'}
+    contact_person:
+    - {contact_type: technical, email_address: {{ satosa_tech_support_email }}, given_name: Technical}
+    - {contact_type: support, email_address: 1234@epfl.ch, given_name: Support}
+    # See the “pysaml2-attribute-maps” ConfigMap object in ../satosa-k8s-objects.yaml for an explanation:
+    attribute_map_dir: /attributemaps
+    entityid: "{{ satosa_tequila_saml_entity_id }}"
+    metadata:
+      remote:
+        - url: "{{ satosa_tequila_saml_metadata_url }}"
+          cert: /tequila-secrets/tequila-cert.pem
+
+    accepted_time_diff: 60
+    service:
+      sp:
+        allow_unsolicited: true
+        endpoints: 
+          assertion_consumer_service:
+          - ["{{ satosa_tequila_saml_entity_id }}/acs/post", 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST']
+          discovery_response:
+          - ["{{ satosa_tequila_saml_entity_id }}/disco", 'urn:oasis:names:tc:SAML:profiles:SSO:idp-discovery-protocol']
+        name_id_format: 'urn:oasis:names:tc:SAML:2.0:nameid-format:transient'
+        # A name_id_format of 'None' will cause the authentication request to not
+        # include a Format attribute in the NameIDPolicy.
+        # name_id_format: 'None'
+        name_id_format_allow_create: true

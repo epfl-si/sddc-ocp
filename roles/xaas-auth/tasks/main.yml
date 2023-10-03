@@ -1,0 +1,16 @@
+- tags: always
+  include_vars: "{{ item }}"
+  with_items:
+    - vars/entrypoints.yml
+    - vars/common-vars.yml
+
+- name: Run SATOSA on TKGI
+  include_tasks:
+    file: satosa-tasks.yml
+    apply:
+      tags:
+        - satosa
+  tags:
+    - satosa
+    - satosa.keys
+    - satosa.k8s
