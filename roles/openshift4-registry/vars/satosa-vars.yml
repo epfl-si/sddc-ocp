@@ -1,6 +1,4 @@
 satosa_image: satosa:8
-# `docker run --rm satosa:8 id` says that the user `satosa` has ID 1000 in the image:
-satosa_run_as_user: 1000
 
 satosa_log_level: DEBUG
 

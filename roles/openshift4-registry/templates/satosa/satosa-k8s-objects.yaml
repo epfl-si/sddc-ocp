@@ -101,9 +101,6 @@ spec:
       labels:
         service: satosa
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: {{ satosa_run_as_user }}
       containers:
         - name: satosa
           image: {{ satosa_image }}
