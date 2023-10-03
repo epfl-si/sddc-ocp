@@ -12,6 +12,7 @@
     - openshift
     - openshift.quay
     - openshift.quay.satosa
+    - openshift.quay.satosa.keys
 
 - name: Quay
   when: >-

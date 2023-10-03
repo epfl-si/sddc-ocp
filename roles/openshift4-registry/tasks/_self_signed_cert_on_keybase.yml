@@ -1,8 +1,17 @@
+- name: '{{ _key | dirname }}'
+  file:
+    path: '{{ _key | dirname }}'
+    state: directory
+
 - name: Generate '{{ _key }}'
   shell:
-    creates: '{{ satosa_keybase.oidc_private_key }}'
-    cmd: openssl genrsa 2048 > {{ satosa_keybase.oidc_private_key }}
-  tags: satosa.keys
+    creates: '{{ _key }}'
+    cmd: openssl genrsa 2048 > {{ _key }}
+
+- name: '{{ _cert | dirname }}'
+  file:
+    path: '{{ _cert | dirname }}'
+    state: directory
 
 - name: Generate '{{ _cert }}'
   shell:
@@ -12,4 +21,3 @@
       -batch -subj '/CN={{ _cn }}'
       -days 3650
       -out {{ _cert }}
-  tags: satosa.keys
