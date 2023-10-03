@@ -1,10 +1,6 @@
-satosa_namespace: satosa-system
 satosa_image: satosa:8
 # `docker run --rm satosa:8 id` says that the user `satosa` has ID 1000 in the image:
 satosa_run_as_user: 1000
-
-# The host name under which the SATOSA front-end side is reachable
-satosa_hostname: tkgi-satosa.epfl.ch
 
 satosa_log_level: DEBUG
 
@@ -13,10 +9,10 @@ satosa_tequila_hostname_short: tequila
 satosa_tequila_hostname: "{{ satosa_tequila_hostname_short }}.epfl.ch"
 
 satosa_keybase:
-  oidc_private_key: /keybase/team/epfl_idevfsd/svc0176idevfsdkt0001/frontend.key
-  oidc_certificate: /keybase/team/epfl_idevfsd/svc0176idevfsdkt0001/frontend.crt
-  saml_private_key: /keybase/team/epfl_idevfsd/svc0176idevfsdkt0001/satosa-backend.key
-  saml_certificate: /keybase/team/epfl_idevfsd/svc0176idevfsdkt0001/satosa-backend.crt
+  oidc_private_key: "{{ inventory_quay_satosa_secrets_folder }}/oidc-frontend.key"
+  oidc_certificate: "{{ inventory_quay_satosa_secrets_folder }}/oidc-frontend.crt"
+  saml_private_key: "{{ inventory_quay_satosa_secrets_folder }}/satosa-backend.key"
+  saml_certificate: "{{ inventory_quay_satosa_secrets_folder }}/satosa-backend.crt"
 
 satosa_base_url: "https://{{ satosa_hostname }}"
 satosa_tequila_saml_entity_name: tequila
@@ -24,21 +20,10 @@ satosa_tequila_saml_entity_id: "{{ satosa_base_url }}/{{ satosa_tequila_saml_ent
 satosa_tequila_saml_metadata_url: "https://{{ satosa_tequila_hostname }}/metadata.{{ satosa_tequila_hostname_short }}-IdP-new.xml"
 
 oidc_clients:
-  - client_id: LHDv3
-    redirect_uris:
-    - https://lhdv3.epfl.ch/
-    response_types:
-    - code
   - client_id: si-quay
     client_secret: si-quay
     token_endpoint_auth_method: client_secret_post
     redirect_uris:
     - https://si-quay.epfl.ch/oauth2/satosa/callback
-    - https://si-registry-quay-redhat-quay.apps.mgmt.ocp-test.epfl.ch/oauth2/satosa/callback
-    response_types:
-    - code
-  - client_id: Matrix-FSD
-    redirect_uris:
-    - https://matrix-fsd.epfl.ch/
     response_types:
     - code

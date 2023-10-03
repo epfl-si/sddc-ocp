@@ -39,6 +39,7 @@ openshift_clusters:
         mgmt.ocp-test.epfl.ch:
           inventory_bastion: bastion-ocp-t
           inventory_quay_s3_credentials_keybase_file: /keybase/team/epfl_ocpnext.test/scality-quay-bucket.yml
+          inventory_quay_satosa_secrets_folder: /keybase/team/epfl_ocpnext.test/satosa
     openshift_spoke_clusters:
       hosts:
         iam.ocp-test.epfl.ch:

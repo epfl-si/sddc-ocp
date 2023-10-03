@@ -45,19 +45,19 @@ metadata:
   namespace: {{ satosa_namespace }}
 data:
   proxy_conf.yaml: |
-    {{ lookup("template", "proxy_conf.yaml") | indent(4) }}
+    {{ lookup("template", "satosa/proxy_conf.yaml") | indent(4) }}
   openid_connect_frontend.yaml: |
-    {{ lookup("template", "satosa-modules/openid_connect_frontend.yaml") | indent(4) }}
+    {{ lookup("template", "satosa/satosa-modules/openid_connect_frontend.yaml") | indent(4) }}
   static_attributes_microservice.yaml: |
-    {{ lookup("template", "satosa-modules/static_attributes_microservice.yaml") | indent(4) }}
+    {{ lookup("template", "satosa/satosa-modules/static_attributes_microservice.yaml") | indent(4) }}
   saml2_backend.yaml: |
-    {{ lookup("template", "satosa-modules/saml2_backend.yaml") | indent(4) }}
+    {{ lookup("template", "satosa/satosa-modules/saml2_backend.yaml") | indent(4) }}
   custom-entrypoint.sh: |
-    {{ lookup("template", "custom-entrypoint.sh") | indent(4) }}
+    {{ lookup("template", "satosa/custom-entrypoint.sh") | indent(4) }}
   satosa_wsgi.py: |
-    {{ lookup("template", "satosa_wsgi.py") | indent(4) }}
+    {{ lookup("template", "satosa/satosa_wsgi.py") | indent(4) }}
   internal_attributes.yaml: |
-    {{ lookup("template", "internal_attributes.yaml") | indent(4) }}
+    {{ lookup("template", "satosa/internal_attributes.yaml") | indent(4) }}
   clients.json: |
     {{ oidc_clients |
        map_dict_defaults({'token_endpoint_auth_method': 'none'}) |
@@ -83,7 +83,7 @@ data:
   # This is why `tequila.py` has to “extend” PySAML2's `saml_uri.py` (see
   # the template of the former for details).
   tequila.py: |
-    {{ lookup("template", "attributemaps/tequila.py") | indent(4) }}
+    {{ lookup("template", "satosa/attributemaps/tequila.py") | indent(4) }}
 
 ---
 apiVersion: v1
