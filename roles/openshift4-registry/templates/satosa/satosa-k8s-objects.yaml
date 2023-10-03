@@ -168,23 +168,16 @@ spec:
 
 ---
 
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: route.openshift.io/v1
+kind: Route
 metadata:
   name: satosa
   namespace: {{ satosa_namespace }}
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: 'false'
 spec:
-  rules:
-    - host: {{ satosa_hostname }}
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service: 
-                name: satosa
-                port: 
-                  number: 80
+  host: {{ quay_hostname }}
+  port:
+    targetPort: http
+  path: /tequila
+  to:
+    kind: Service
+    name: satosa
