@@ -1,0 +1,26 @@
+.reveal ul {
+    display: inherit;
+}
+
+section {
+    border-radius: 20px;
+}
+
+section.slide-text-gray {
+    background-color: #6f6f6fa3;
+    pre {
+        color: white;
+    }
+}
+
+code {
+    color: lightblue;
+}
+
+section#sec-title-slide a {
+    color: var(--r-link-color-hover);
+}
+
+section.slide-code-boxed pre {
+    background-color: white;
+}
