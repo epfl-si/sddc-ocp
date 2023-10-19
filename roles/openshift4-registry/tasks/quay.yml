@@ -135,8 +135,6 @@
 
 - vars:
     ansible_connection: oc
-    ansible_oc_kubeconfig: "{{ xaasible_kubeconfig }}"
-    ansible_oc_namespace: "{{ quay_namespace }}"
     ansible_oc_pod: "{{ quay_pod_names[0] }}"
     ansible_oc_container: "quay-app"
     ansible_remote_tmp: /tmp

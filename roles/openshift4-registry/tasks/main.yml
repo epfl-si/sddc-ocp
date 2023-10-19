@@ -24,6 +24,14 @@
         - openshift
         - openshift.quay
         - openshift.quay.server
+      vars:
+        # These two variables are used when expanding variables such
+        # as `quay_pod_names`, and therefore they are needed by all
+        # tasks, regardless of whether they mess with
+        # `ansible_connection` or not:
+        ansible_oc_kubeconfig: "{{ xaasible_kubeconfig }}"
+        ansible_oc_namespace: "{{ quay_namespace }}"
+
   tags:
     - openshift
     - openshift.quay
