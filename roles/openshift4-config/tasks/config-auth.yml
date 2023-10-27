@@ -9,7 +9,9 @@
         name: cluster
       spec:
         identityProviders:
-          - ldap:
+          - name: scoldap
+            type: LDAP
+            ldap:
               attributes:
                 email:
                   - mail
@@ -23,8 +25,6 @@
               url: >-
                 ldaps://scoldap.epfl.ch:636/o=epfl,c=ch?uid?sub?(memberof={{_sgroup}})
             mappingMethod: claim
-            name: scoldap
-            type: LDAP
   vars:
     _sgroup: >-
       {{ lookup("scoldap",
