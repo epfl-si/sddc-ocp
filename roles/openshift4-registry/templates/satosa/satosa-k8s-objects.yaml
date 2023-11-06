@@ -39,6 +39,27 @@ data:
 
 ---
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: si-registry-satosa-app
+  namespace: {{ satosa_namespace }}
+
+---
+ apiVersion: rbac.authorization.k8s.io/v1
+ kind: ClusterRoleBinding
+ metadata:
+   name: si-quay-satosa-insists-to-run-as-uid-1000
+ roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: system:openshift:scc:nonroot-v2
+ subjects:
+ - kind: ServiceAccount
+   namespace: {{ satosa_namespace }}
+   name: si-registry-satosa-app
+
+---
+apiVersion: v1
 kind: Deployment
 metadata:
   name: satosa
@@ -94,6 +115,9 @@ spec:
               value: "{{ satosa_base_url }}"
             - name: SATOSA_ENTITY_ID
               value: "{{ satosa_entity_id }}"
+      serviceAccount: si-registry-satosa-app
+      securityContext:
+        runAsUser: 1000
       ports:
         - containerPort: 8080
           name: http
