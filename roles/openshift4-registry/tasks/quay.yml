@@ -85,12 +85,13 @@
           SATOSA_LOGIN_CONFIG:
               CLIENT_ID: si-quay
               CLIENT_SECRET: si-quay
-              OIDC_SERVER: https://tkgi-satosa.epfl.ch/
+              OIDC_SERVER: https://{{ quay_hostname }}/
               SERVICE_NAME: Tequila
               LOGIN_SCOPES:
                 - openid
                 - email
                 - profile
+                - tequila
 
           {# The remainder below was cargo-culted from the operator's
            # default configuration: #}

@@ -4,35 +4,11 @@
     - satosa-vars.yml
     - quay-vars.yml
 
-- include_tasks:
-    file: _self_signed_cert_on_keybase.yml
-    apply:
-      tags:
-        - openshift
-        - openshift.quay
-        - openshift.quay.satosa
-        - openshift.quay.satosa.keys
-  tags:
-    - openshift
-    - openshift.quay
-    - openshift.quay.satosa
-    - openshift.quay.satosa.keys
-  vars:
-    _key: "{{ item.key }}"
-    _cert: "{{ item.cert }}"
-    _cn: "{{ item.cn }}"
-  with_items:
-  - key: "{{ satosa_keybase.oidc_private_key }}"
-    cert: "{{ satosa_keybase.oidc_certificate }}"
-    cn: "{{ quay_hostname }}"
-  - key: "{{ satosa_keybase.saml_private_key }}"
-    cert: "{{ satosa_keybase.saml_certificate }}"
-    cn: "{{ quay_hostname }}"
-
 - name: SATOSA Kubernetes objects
   kubernetes.core.k8s:
     definition: '{{ item }}'
   with_items: >-
     {{ lookup('template', 'satosa/satosa-k8s-objects.yaml',
-       template_vars=dict(satosa_namespace=quay_namespace))
+       template_vars=dict(satosa_namespace=quay_namespace,
+                          satosa_tequila_zip_url=satosa_tequila_zip_url))
     | from_yaml_all }}

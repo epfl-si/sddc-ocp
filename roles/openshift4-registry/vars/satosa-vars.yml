@@ -1,23 +1,13 @@
 satosa_image: satosa:8
 
-satosa_log_level: DEBUG
+satosa_entity_id: https://tkgi-satosa.epfl.ch/tequila   # TODO: temporary!! See https://go.epfl.ch/INC0585871
+satosa_base_url: https://{{ quay_hostname }}
 
-satosa_tech_support_email: 1234@epfl.ch
-satosa_tequila_hostname_short: tequila
-satosa_tequila_hostname: "{{ satosa_tequila_hostname_short }}.epfl.ch"
+satosa_tequila_tag: v1.0.9
+satosa_tequila_zip_url: >-
+  https://github.com/epfl-si/satosa-tequila/archive/refs/tags/{{ satosa_tequila_tag }}.zip
 
-satosa_keybase:
-  oidc_private_key: "{{ inventory_quay_satosa_secrets_folder }}/oidc-frontend.key"
-  oidc_certificate: "{{ inventory_quay_satosa_secrets_folder }}/oidc-frontend.crt"
-  saml_private_key: "{{ inventory_quay_satosa_secrets_folder }}/satosa-backend.key"
-  saml_certificate: "{{ inventory_quay_satosa_secrets_folder }}/satosa-backend.crt"
-
-satosa_base_url: "https://{{ quay_hostname }}"
-satosa_tequila_saml_entity_name: tequila
-satosa_tequila_saml_entity_id: "{{ satosa_base_url }}/{{ satosa_tequila_saml_entity_name }}"
-satosa_tequila_saml_metadata_url: "https://{{ satosa_tequila_hostname }}/metadata.{{ satosa_tequila_hostname_short }}-IdP-new.xml"
-
-oidc_clients:
+satosa_oidc_clients:
   - client_id: si-quay
     client_secret: si-quay
     token_endpoint_auth_method: client_secret_post
@@ -25,3 +15,5 @@ oidc_clients:
     - https://si-quay.epfl.ch/oauth2/satosa/callback
     response_types:
     - code
+    tequila_requires:
+      - group: si-quay-admin
