@@ -160,6 +160,8 @@ spec:
 
 ---
 
+# The `si-registry-quay-app-XXXXX-YYYY` pods use this route to
+# wrangle the OpenID-Connect API:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
@@ -179,6 +181,7 @@ spec:
 
 ---
 
+# The browser uses this route on its way back from Tequila:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
