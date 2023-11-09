@@ -5,8 +5,8 @@ bastions:
     bastion-ocp-t:
       inventory_openshift_iteration: 0
       # Used in ../roles/bastion-vm/vars/bastion-vsphere-vars.yml, and
-      # also as a key to the top-level dict of
-      # /keybase/team/epfl_idevfsd/OpenShift-4/vsphere-credentials.yml :
+      # also as a key to the top-level dict of the Keybase file
+      # referenced on the next line:
       inventory_vsphere_name: vsphere-test
       inventory_vsphere_credentials_keybase_file: >-
         /keybase/team/epfl_ocpnext.test/vsphere-credentials.yml
