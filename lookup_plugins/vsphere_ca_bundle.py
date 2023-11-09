@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from ansible.plugins.lookup import LookupBase
 from ansible.errors import AnsibleError
 import urllib.request
@@ -24,3 +25,7 @@ class LookupModule(LookupBase):
 
         # For whatever reason, Ansible wants us to return an array.
         return [cert_bundle.decode("ascii")]
+
+if __name__ == '__main__':
+    import sys
+    print(LookupModule().run([sys.argv[1]])[0])
