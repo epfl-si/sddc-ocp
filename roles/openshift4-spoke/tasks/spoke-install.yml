@@ -177,7 +177,7 @@
         searchCollector:
           enabled: true
 
-- run_once: true   # You don't have multiple hub clusters do you?
+- run_once: true
   when: _spoke_clusterdeployment is changed
   pause:
     echo: false
