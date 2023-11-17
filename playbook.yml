@@ -4,6 +4,12 @@
   roles:
     - role: roles/init
 
+- name: "vcenter: create role privilege for OCP user"
+  hosts: vsissp-vcsa-ocp-t
+  gather_facts: no
+  roles:
+    - role: roles/vcenter-roles
+
 - name: "bastion-vm: configure bastion VM(s)"
   hosts: bastions
   gather_facts: no
@@ -72,6 +78,17 @@
   gather_facts: no
   roles:
     - role: roles/openshift4-config
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ xaasible_python_shim }}"
+      environment:
+        KUBECONFIG: "{{ xaasible_kubeconfig }}"
+
+- name: "openshift4-gatekeeper: add template and constraint to spoke cluster"
+  hosts: openshift_clusters
+  gather_facts: no
+  roles:
+    - role: roles/openshift4-gatekeeper
       vars:
         ansible_connection: local
         ansible_python_interpreter: "{{ xaasible_python_shim }}"
