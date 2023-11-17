@@ -1,0 +1,57 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: clusterstoragequota
+spec:
+  crd:
+    spec:
+      names:
+        kind: clusterstoragequota
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          type: object
+          properties:
+            storagelimit:
+              type: string
+              # Values can inculde common multipliers like 1M, 3Mi, 1.5G and so on
+              description: "Maximum size of all PVC in the cluster"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package clusterstoragequota
+
+        # set of operations we want to check
+        operations = {"CREATE", "UPDATE"}	
+
+        # storage size of the volume in the request
+        storagesize := units.parse_bytes(input.review.object.spec.resources.requests.storage)
+
+        # convert the limit from the constraint to bytes
+        storagelimit := units.parse_bytes(input.parameters.storagelimit)
+
+        # storage size of the existing persistent volume claimes
+        sum_pvc_size() = totalsize {
+
+        #   with first [_] to iterate over all namespaces and 2nd [_] to iterate over existing pvc's
+        ns := data.inventory.namespace
+        sizes := [ size | size := ns[_].v1.PersistentVolumeClaim[_].spec.resources.requests.storage ]
+        bytes := [ byte | byte := units.parse_bytes(sizes[_]) ]
+
+        # sum up the values
+        totalsize := sum(bytes) + storagesize
+
+        }
+
+        # decide if limit exceeded
+        violation[{"msg": msg}] {
+
+          # check if operation is CREATE or UPDATE ...
+          operations[input.review.operation]	
+
+          # ... and if the size of all pvcs is bigger than the limit
+          sum_pvc_size > storagelimit
+
+          # then deny the request with the message
+          msg := sprintf("Size of all PVCs %v exceeds cluster storage quota %v", [sum_pvc_size, storagelimit])
+        }

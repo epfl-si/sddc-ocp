@@ -1,0 +1,7 @@
+- include_tasks:
+    file: openshift4-gatekeeper.yml
+    apply:
+      tags:
+        - openshift.gatekeeper
+  tags:
+    - openshift.gatekeeper
