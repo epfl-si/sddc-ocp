@@ -1,0 +1,9 @@
+- include_tasks:
+    file: vcenter-roles.yml
+    apply:
+      tags:
+        - roles
+        - roles.vc
+  tags:
+    - roles
+    - roles.vc
