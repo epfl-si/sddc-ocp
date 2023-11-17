@@ -7,3 +7,15 @@
   tags:
     - roles
     - roles.vc
+
+- include_tasks:
+    file: vcenter-apply-roles-to-ocp-user.yml
+    apply:
+      tags:
+        - roles
+        - roles.vc
+        - roles.vc.to.user
+  tags:
+    - roles
+    - roles.vc
+    - roles.vc.to.user
