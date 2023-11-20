@@ -2,8 +2,16 @@
 
 set -e
 
+ansible_suitcase_dir () {
+    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        echo /tmp/ansible-suitcase
+    else
+        echo $PWD/ansible-deps-cache
+    fi
+}
+
 cd "$(dirname "$0")"; cd "$(/bin/pwd)"
-. "$PWD"/ansible-deps-cache/lib.sh
+. "$(ansible_suitcase_dir)"/lib.sh
 
 usage () {
     fatal <<'USAGE'
