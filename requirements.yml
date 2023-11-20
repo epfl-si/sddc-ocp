@@ -2,6 +2,7 @@ collections:
 - name: kubernetes.core
 - name: ansible.posix
 - name: community.vmware
+  version: "=3.9.0"
 - name: community.okd
 - name: epfl_si.actions
   version: ">=0.3.1"
