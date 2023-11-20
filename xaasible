@@ -17,18 +17,26 @@
 
 cd "$(cd $(dirname "$0"); /bin/pwd)"
 
+ansible_suitcase_dir () {
+    if [ -f /proc/sys/fs/binfmt_misc/WSLInterop ]; then
+        echo /tmp/ansible-suitcase
+    else
+        echo $PWD/ansible-deps-cache
+    fi
+}
+
 ensure_ansible () {
-    if ! test -f ansible-deps-cache/.versions 2>/dev/null; then
+    if ! test -f "$(ansible_suitcase_dir)"/.versions 2>/dev/null; then
         ensure_libxmlsec1
         curl https://raw.githubusercontent.com/epfl-si/ansible.suitcase/master/install.sh | \
-            SUITCASE_DIR=$PWD/ansible-deps-cache \
+            SUITCASE_DIR="$(ansible_suitcase_dir)" \
             SUITCASE_PIP_EXTRA="bcrypt passlib kubernetes pyvmomi ldap3 python3-saml lxml" \
             SUITCASE_ANSIBLE_VERSION=6.3.0 \
             SUITCASE_ANSIBLE_REQUIREMENTS=requirements.yml \
             bash -x
     fi
 
-    . "$PWD"/ansible-deps-cache/lib.sh
+    . "$(ansible_suitcase_dir)"/lib.sh
     ensure_ansible_runtime
 }
 
