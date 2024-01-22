@@ -3,18 +3,6 @@
   with_items:
     - resources.yml
 
-# From repository
-# - name: Add stable chart gatekeeper repo
-#   kubernetes.core.helm_repository:
-#     name: gatekeeper
-#     repo_url: "https://open-policy-agent.github.io/gatekeeper/charts"
-
-# - name: Deploy latest version of Gatekeeper chart inside gatekeeper-system namespace (and create it)
-#   kubernetes.core.helm:
-#     name: gatekeeper
-#     chart_ref: gatekeeper/gatekeeper
-#     release_namespace: gatekeeper-system
-#     create_namespace: true
 - name: Subscription/gatekeeper
   kubernetes.core.k8s:
     definition:
