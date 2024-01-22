@@ -72,6 +72,7 @@ resources_openshift_clusters:
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
     OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
+    quota_sc_size: 50
 
   fsd.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.fsd }}"

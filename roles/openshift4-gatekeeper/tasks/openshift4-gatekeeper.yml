@@ -4,17 +4,31 @@
     - resources.yml
 
 # From repository
-- name: Add stable chart gatekeeper repo
-  kubernetes.core.helm_repository:
-    name: gatekeeper
-    repo_url: "https://open-policy-agent.github.io/gatekeeper/charts"
+# - name: Add stable chart gatekeeper repo
+#   kubernetes.core.helm_repository:
+#     name: gatekeeper
+#     repo_url: "https://open-policy-agent.github.io/gatekeeper/charts"
 
-- name: Deploy latest version of Gatekeeper chart inside gatekeeper-system namespace (and create it)
-  kubernetes.core.helm:
-    name: gatekeeper
-    chart_ref: gatekeeper/gatekeeper
-    release_namespace: gatekeeper-system
-    create_namespace: true
+# - name: Deploy latest version of Gatekeeper chart inside gatekeeper-system namespace (and create it)
+#   kubernetes.core.helm:
+#     name: gatekeeper
+#     chart_ref: gatekeeper/gatekeeper
+#     release_namespace: gatekeeper-system
+#     create_namespace: true
+- name: Subscription/gatekeeper
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: operators.coreos.com/v1alpha1
+      kind: Subscription
+      metadata:
+        name: gatekeeper-operator-product
+        namespace: gatekeeper-system
+      spec:
+        sourceNamespace: openshift-marketplace
+        source: redhat-operators
+        channel: stable
+        installPlanApproval: Automatic
+        name: gatekeeper-operator-product
 
 - name: Create a gatekeeper constraint template by reading the definition from a local file
   kubernetes.core.k8s:
