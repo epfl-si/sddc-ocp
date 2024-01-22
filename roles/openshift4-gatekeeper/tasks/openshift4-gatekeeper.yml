@@ -35,7 +35,12 @@
     state: present
     src: template-quota-sc.yml
 
+- name: Create a gatekeeper config to sync resources by reading the definition from a local file
+  kubernetes.core.k8s:
+    state: present
+    src: gk-config.yml
+
 - name: Create a gatekeeper constraint by reading the definition from template
   kubernetes.core.k8s:
     state: present
-    template: 'constraint-quota-sc.yml'
+    template: constraint-quota-sc.yml

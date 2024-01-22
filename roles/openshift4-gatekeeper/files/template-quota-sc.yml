@@ -1,12 +1,12 @@
 apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
-  name: clusterstoragequota
+  name: gkclusterstoragequota
 spec:
   crd:
     spec:
       names:
-        kind: clusterstoragequota
+        kind: gkclusterstoragequota
       validation:
         # Schema for the `parameters` field
         openAPIV3Schema:
@@ -19,7 +19,7 @@ spec:
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package clusterstoragequota
+        package gkclusterstoragequota
 
         # set of operations we want to check
         operations = {"CREATE", "UPDATE"}	

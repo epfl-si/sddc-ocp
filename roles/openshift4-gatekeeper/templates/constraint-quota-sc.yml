@@ -1,5 +1,5 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: clusterstoragequota
+kind: gkclusterstoragequota
 metadata:
   name: quota-sc
 spec:
