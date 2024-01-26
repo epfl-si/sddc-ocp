@@ -93,6 +93,26 @@
                 - profile
                 - tequila
 
+          FEATURE_TEAM_SYNCING: true
+          # Because why not?
+          FEATURE_NONSUPERUSER_TEAM_SYNCING_SETUP: true
+          TEAM_RESYNC_STALE_TIME: 60m
+
+          # From what I gathered during RTFS, one can set
+          # AUTHENTICATION_TYPE independently of FEATURE_FOO_LOGIN, in
+          # which case (despite the name) that setting regulates
+          # authorization instead: i.e. synchronous superuser checks,
+          # team membership sync source.
+          AUTHENTICATION_TYPE: LDAP
+          LDAP_URI: ldaps://scoldap.epfl.ch/
+          LDAP_BASE_DN:
+            - "OU=users"
+            - "O=epfl"
+            - "C=ch"
+          LDAP_SUPERUSER_FILTER: >-
+            (memberof={{ _superuser_sgroup }})
+          LDAP_ADMIN_DN: {{ inventory_quay_credentials.ldap.bind_dn }}
+          LDAP_ADMIN_PASSWD: {{ inventory_quay_credentials.ldap.bind_password }}
           {# The remainder below was cargo-culted from the operator's
            # default configuration: #}
           ALLOW_PULLS_WITHOUT_STRICT_LOGGING: false
@@ -104,8 +124,11 @@
           SETUP_COMPLETE: true
           TAG_EXPIRATION_OPTIONS:
           - 2w
-          TEAM_RESYNC_STALE_TIME: 60m
           TESTING: false
+  vars:
+    _superuser_sgroup: >-
+      {{ lookup("scoldap", quay_access_groups.superusers,
+      by="cn", get="uniqueidentifier") }}
 
 - name: Quay registry
   kubernetes.core.k8s:

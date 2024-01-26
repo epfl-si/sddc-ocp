@@ -16,4 +16,4 @@ satosa_oidc_clients:
     response_types:
     - code
     tequila_requires:
-      - group: si-quay-admin
+      - group: si-quay
