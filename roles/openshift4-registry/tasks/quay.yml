@@ -97,6 +97,7 @@
           # Because why not?
           FEATURE_NONSUPERUSER_TEAM_SYNCING_SETUP: true
           TEAM_RESYNC_STALE_TIME: 60m
+          FEATURE_SUPERUSERS_ORG_CREATION_ONLY: true
 
           # From what I gathered during RTFS, one can set
           # AUTHENTICATION_TYPE independently of FEATURE_FOO_LOGIN, in
