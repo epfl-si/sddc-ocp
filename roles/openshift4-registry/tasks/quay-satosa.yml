@@ -4,6 +4,42 @@
     - satosa-vars.yml
     - quay-vars.yml
 
+- name: SATOSA ConfigMap
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: satosa
+        namespace: "{{ quay_namespace }}"
+      data:
+        somthing: changed
+        proxy_conf.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="proxy_conf.yaml") }}
+        custom-entrypoint.sh: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="custom-entrypoint.sh") }}
+        openid_connect_frontend.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/openid_connect_frontend.yaml") }}
+        saml2_backend.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/saml2_backend.yaml") }}
+        internal_attributes.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/internal_attributes.yaml") }}
+        static_attributes_microservice.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/static_attributes_microservice.yaml") }}
+        tequila_require_microservice.yaml: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/tequila_require_microservice.yaml") }}
+        micro_services.py: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="site-python/epfl/micro_services.py") }}
+        satosa_wsgi.py: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="site-python/epfl/satosa_wsgi.py") }}
+        tequila_attributes.py: |
+          {{ lookup("zip", url=satosa_tequila_zip_url, path="config/attributemaps/tequila_attributes.py") }}
+        clients.json: |
+          {{ satosa_oidc_clients |
+             dictify('client_id') |
+             to_json }}
+  register: _satosa_configmap
+
 - name: SATOSA Kubernetes objects
   kubernetes.core.k8s:
     definition: '{{ item }}'
@@ -12,3 +48,10 @@
        template_vars=dict(satosa_namespace=quay_namespace,
                           satosa_tequila_zip_url=satosa_tequila_zip_url))
     | from_yaml_all }}
+
+- name: Restart SATOSA
+  when: >-
+    _satosa_configmap is changed
+  shell:
+    cmd:
+      oc -n {{ quay_namespace }} rollout restart deployment/satosa
