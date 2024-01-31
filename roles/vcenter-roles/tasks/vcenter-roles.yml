@@ -5,8 +5,8 @@
 - name: Get vcenter info
   vmware_about_info:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: false
   delegate_to: localhost
   register: vcenter_info
@@ -14,9 +14,10 @@
 - name: Create openshift-vcenter-level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: false
+    action: "add"
     local_role_name: openshift-vcenter_level
     local_privilege_ids: "{{ vcenter_level }}"
     state: present
@@ -25,8 +26,8 @@
 - name: Create openshift-cluster-level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-cluster_level
     local_privilege_ids: "{{ cluster_level }}"
@@ -36,8 +37,8 @@
 - name: Create openshift-datastore_level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-datastore_level
     local_privilege_ids: "{{ datastore_level }}"
@@ -47,8 +48,8 @@
 - name: Create openshift-datastore_level role vc7
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-datastore_level
     local_privilege_ids: "{{ datastore_level | union(datastore_level_vc7) }}"
@@ -59,8 +60,8 @@
 - name: Create openshift-portgroup_level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-portgroup_level
     local_privilege_ids: "{{ portgroup_level }}"
@@ -70,53 +71,53 @@
 - name: Create openshift-folder_level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-folder_level
     local_privilege_ids: "{{ folder_level }}"
     state: present
   when:
-    - openshift.installer_created_folder == False
+    - installer_created_folder == False
   delegate_to: localhost
 
 - name: Create openshift-folder_level role vc7
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-folder_level
     local_privilege_ids: "{{ folder_level | union(folder_level_vc7) }}"
     state: present
   when:
-    - openshift.installer_created_folder == False
+    - installer_created_folder == False
     - vcenter_info.about_info.version.startswith('7.')
   delegate_to: localhost
 
 - name: Create openshift-datacenter_level role
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-datacenter_level
     local_privilege_ids: "{{ datacenter_level }}"
     state: present
   when:
-    - openshift.installer_created_folder == True
+    - installer_created_folder == True
   delegate_to: localhost
 
 - name: Create openshift-datacenter_level role vc7
   vmware_local_role_manager:
     hostname: '{{ inventory_vsphere_credentials.host }}'
-    username: '{{ inventory_vsphere_credentials.admin_user }}'
-    password: '{{ inventory_vsphere_credentials.admin_password }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     local_role_name: openshift-datacenter_level
     local_privilege_ids: "{{ datacenter_level | union(datacenter_level_vc7) }}"
     state: present
   when:
-    - openshift.installer_created_folder == True
+    - installer_created_folder == True
     - vcenter_info.about_info.version.startswith('7.')
-  delegate_to: localhost
+  delegate_to: localhost"

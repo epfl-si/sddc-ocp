@@ -1,5 +1,29 @@
 # The so-called “iteration 0” of OpenShift 4 @ EPFL.
 
+vcenters:
+  hosts:
+    ocp-t:
+      inventory_vsphere_name: vsphere-test
+      inventory_vsphere_credentials_keybase_file: >-
+        /keybase/private/lelouchviesp/epfl_ocpnext.test/admin-vcenter-credentials.yml
+      # Should contain keys `host`, `user` and `password`. ⚠ `user`
+      # must be the fully qualified name, i.e.
+      # `INTRANET\vsissp-ocp-svc-t-01` rather than
+      # `vsissp-ocp-svc-t-01`! Otherwise, the install will proceed
+      # smoothly, up until the point where the VMware CSI driver needs
+      # to create volumes. Because said driver's controller
+      # introspects its own permissions to figure out volume placement
+      # topologies; and it is not very smart about the idea that the
+      # same user can have more than one username;
+      # https://access.redhat.com/support/cases/#/case/03611844
+      # ensues.
+  vars:
+    inventory_vsphere_credentials: >-
+        {{ lookup("pipe", "keybase fs read " +
+                          inventory_vsphere_credentials_keybase_file)
+        | from_yaml }}
+    installer_created_folder: True
+
 bastions:
   hosts:
     bastion-ocp-t:

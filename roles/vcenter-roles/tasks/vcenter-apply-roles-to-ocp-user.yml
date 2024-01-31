@@ -1,121 +1,130 @@
 ---
 - name: Check if precreated folder exists
   vmware_folder_info:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
-    datacenter: "{{ vcenter.datacenter }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
+    datacenter: '{{ inventory_vsphere_credentials.datacenter }}'
     validate_certs: no
+  delegate_to: localhost
   register: results_folder
 
 - name: Fail if Folder does not exist and create = False
   fail:
-    msg: "Folder in vCenter does not exist. create_folder set to False. Please create folder in vCenter."
+    msg: 'Folder in vCenter does not exist. create_folder set to False. Please create folder in vCenter.'
   when:
-    - vcenter.folder not in results_folder.folder_info.vmFolders.subfolders
-    - vcenter.create_folder == False
+    - inventory_vsphere_credentials.folder not in results_folder.folder_info.vmFolders.subfolders
+    - installer_created_folder == False
 
-- name: Create "{{ vcenter.folder }}" in vCenter
+- name: Create '{{ vcenter.folder }}' in vCenter
   vcenter_folder:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
-    datacenter: "{{ vcenter.datacenter }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
+    datacenter: '{{ inventory_vsphere_credentials.datacenter }}'
     validate_certs: no
-    folder_name: "{{ vcenter.folder }}"
+    folder_name: '{{ inventory_vsphere_credentials.folder }}'
     folder_type: vm
     state: present
   when:
-    - vcenter.folder not in results_folder.folder_info.vmFolders.subfolders
-    - vcenter.create_folder == True
+    - inventory_vsphere_credentials.folder not in results_folder.folder_info.vmFolders.subfolders
+    - installer_created_folder == True
 
 - name: Apply openshift-vcenter_level role to vCenter
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: openshift-vcenter_level
-    principal: "{{ openshift.vcenter_svc_account }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
     object_name: rootFolder
     object_type: Folder
     state: present
     recursive: no
+  delegate_to: localhost
 
 - name: Apply ReadyOnly role to vCenter Datacenter
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: ReadOnly
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.datacenter }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ inventory_vsphere_credentials.datacenter }}'
     object_type: Datacenter
     state: present
     recursive: no
+  delegate_to: localhost
 
 - name: Apply openshift-cluster_level role to vCenter Cluster
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: openshift-cluster_level
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.cluster }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ inventory_vsphere_credentials.cluster }}'
     object_type: ClusterComputeResource
     state: present
     recursive: yes
+  delegate_to: localhost
 
 - name: Apply openshift-folder_level role to vCenter Cluster
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: openshift-folder_level
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.folder }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ inventory_vsphere_credentials.folder }}'
     object_type: Folder
     state: present
     recursive: yes
+  delegate_to: localhost
 
 - name: Apply openshift-datastore_level role to vCenter Datastore
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: openshift-datastore_level
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.datastore }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ inventory_vsphere_credentials.datastore }}'
     object_type: Datastore
     state: present
     recursive: no
+  delegate_to: localhost
 
 - name: Apply ReadyOnly role to vCenter Switch
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: ReadOnly
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.dswitch }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ inventory_vsphere_credentials.dswitch }}'
     object_type: DistributedVirtualPortgroup
     state: present
     recursive: no
+  delegate_to: localhost
 
 - name: Apply openshift-portgroup_level role to vCenter PortGroup
   vmware_object_role_permission:
-    hostname: "{{ vcenter.ip }}"
-    username: "{{ vcenter.admin_username }}"
-    password: "{{ vcenter.admin_password }}"
+    hostname: '{{ inventory_vsphere_credentials.host }}'
+    username: '{{ inventory_vsphere_credentials.user }}'
+    password: '{{ inventory_vsphere_credentials.password }}'
     validate_certs: no
     role: openshift-portgroup_level
-    principal: "{{ openshift.vcenter_svc_account }}"
-    object_name: "{{ vcenter.network }}"
+    principal: '{{ inventory_vsphere_credentials.serviceAccount }}'
+    object_name: '{{ item }}'
     object_type: Network
     state: present
     recursive: no
+  delegate_to: localhost
+  loop: '{{ inventory_vsphere_credentials.network }}'

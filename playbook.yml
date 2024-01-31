@@ -4,6 +4,12 @@
   roles:
     - role: roles/init
 
+- name: "vcenter-roles"
+  hosts: vcenters
+  gather_facts: no
+  roles:
+    - role: roles/vcenter-roles
+
 - name: "bastion-vm: configure bastion VM(s)"
   hosts: bastions
   gather_facts: no
