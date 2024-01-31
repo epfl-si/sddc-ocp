@@ -56,7 +56,7 @@ networking:
   - {{ _it.podIPs | to_nice_yaml | indent(4) | trim }}
   machineNetwork:
   - {{ _it.machineIPs | to_nice_yaml | indent(4) | trim }}
-  networkType: OVNKubernetes
+  networkType: Cilium
   serviceNetwork:
   - {{ _it.serviceIPs.cidr }}
 platform:
