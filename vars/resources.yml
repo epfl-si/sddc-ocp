@@ -151,3 +151,8 @@ _vsphere_networks:
       # ipv4:
       #  cidr: 10.98.64.0/24
       #  gateway: 10.98.64.1
+
+_cilium_config:
+  cilium_version: 1.14.3
+  git_bastion_dir: "tmp/cilium-olm"
+  git_repo: "https://github.com/isovalent/olm-for-cilium.git"
