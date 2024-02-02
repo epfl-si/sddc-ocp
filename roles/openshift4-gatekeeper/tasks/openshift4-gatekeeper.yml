@@ -22,7 +22,7 @@
       kind: Subscription
       metadata:
         name: gatekeeper-operator-product
-        namespace: gatekeeper-system
+        namespace: openshift-operators
       spec:
         sourceNamespace: openshift-marketplace
         source: redhat-operators
@@ -30,15 +30,31 @@
         installPlanApproval: Automatic
         name: gatekeeper-operator-product
 
-- name: Create a gatekeeper constraint template by reading the definition from a local file
+- name: Create a gatekeeper instance by reading the definition from a local file
   kubernetes.core.k8s:
     state: present
-    src: template-quota-sc.yml
+    src: gk-instance.yml
+
+- name: Wait until gatekeeper is ready
+  kubernetes.core.k8s_info:
+    kind: Pod
+    namespace: openshift-gatekeeper-system
+    wait: yes
+    wait_sleep: 10
+    wait_timeout: 600
+    wait_condition:
+      type: Ready
+      status: "True"
 
 - name: Create a gatekeeper config to sync resources by reading the definition from a local file
   kubernetes.core.k8s:
     state: present
     src: gk-config.yml
+
+- name: Create a gatekeeper constraint template by reading the definition from a local file
+  kubernetes.core.k8s:
+    state: present
+    src: template-quota-sc.yml
 
 - name: Create a gatekeeper constraint by reading the definition from template
   kubernetes.core.k8s:
