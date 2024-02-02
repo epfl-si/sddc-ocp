@@ -4,3 +4,4 @@ metadata:
   name: gatekeeper
 spec:
   validatingWebhook: "Enabled"
+## https://access.redhat.com/articles/6047221 pour des configurations supplémentaires
