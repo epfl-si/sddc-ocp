@@ -1,1 +1,1 @@
-gatekeeper_operator_namespace: "gatekeeper-system"
+gatekeeper_operator_namespace: "openshift-gatekeeper-system"
