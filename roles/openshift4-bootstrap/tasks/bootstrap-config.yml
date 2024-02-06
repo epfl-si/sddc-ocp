@@ -67,7 +67,7 @@
     insertbefore: 'image:'
     block: |
         - name: KUBERNETES_SERVICE_HOST  #override the KUBERNETES apiserver.
-          value: "api-int.ocp1.k8s.work" 
+          value: "api.{{ inventory_hostname }}" 
         - name: KUBERNETES_SERVICE_PORT  #override the KUBERNETES port.
           value: "6443"
 
