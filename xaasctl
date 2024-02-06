@@ -188,7 +188,7 @@ Whoa.
 
 Would you be so kind as to copy and paste the following commands in your shell:
 
-   oc delete namespace $ns
+   oc delete managedcluster $ns
 
 ... cause I sure ain't doing that for you.
 
