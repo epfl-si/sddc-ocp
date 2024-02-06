@@ -63,11 +63,11 @@ resources_openshift_clusters:
     workers: 3
     masters: 3
     apiVIPs:
-      - 10.98.26.2
+      - 10.98.99.2
     ingressVIPs:
-      - 10.98.26.3
+      - 10.98.99.3
     machineIPs:
-      cidr: 10.98.26.0/24
+      cidr: 10.98.99.0/24
     podIPs:
       cidr: 192.168.0.0/16
       hostPrefix: 23
@@ -132,22 +132,22 @@ _vsphere_placements:
 _vsphere_networks:
   test:
     mgmt:
-      name: S-VLAN-OCP-mgmt-VNI12029
+      name: clstr-test-OCP-01_wrkl_29-ocp-mgmt
       # ipv4:
       #  cidr: 10.98.24.0/24
       #  gateway: 10.98.24.1
     iam:
-      name: S-VLAN-OCP-Prod-VNI12019
+      name: clstr-test-OCP-01_wrkl_19-ocp-prod
       # ipv4:
       #  cidr: 10.98.31.0/24
       #  gateway: 10.98.31.1
     camptocamp:
-      name: S-VLAN-OCP-Dev-VNI12018
+      name: clstr-test-OCP-01_wrkl_36-OCP-SDDC-Egress-Dev
       # ipv4:
-      #  cidr: 10.98.26.0/24
-      #  gateway: 10.98.26.1
+      #  cidr: 10.98.99.0/24
+      #  gateway: 10.98.99.1
     fsd:
-      name: S-VLAN-OCP-Test-VNI12020
+      name: clstr-test-OCP-01_wrkl_20-ocp-test
       # ipv4:
       #  cidr: 10.98.64.0/24
       #  gateway: 10.98.64.1
