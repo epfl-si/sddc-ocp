@@ -189,7 +189,7 @@
 
       If you are bored, feel free to watch progress at
 
-          https://{{ inventory_hub_cluster }}/multicloud/infrastructure/clusters/managed
+          https://console-openshift-console.apps.{{ inventory_hub_cluster }}/multicloud/infrastructure/clusters/managed
 
       and click on the “Creating” hyperlinks to watch logs.
 
