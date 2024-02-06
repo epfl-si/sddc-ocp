@@ -181,7 +181,7 @@ destroy_cluster__spoke () {
     log_in_to_cluster "$(hub_fqdn_of_fqdn "$fqdn")" >/dev/null
 
     local cluster="$(cluster_of_fqdn "$fqdn")"
-    local ns="$(cluster_iam_ocp_test_epfl_ch_cluster_hub_namespace)"
+    local ns="$(eval cluster_${cluster}_cluster_hub_namespace)"
     cat >&2 <<WHOA
 
 Whoa.
