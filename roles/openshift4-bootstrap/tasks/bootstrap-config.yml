@@ -40,30 +40,30 @@
 
 - name: Copy cilium configuration file to manifest dir
   ansible.builtin.copy:
-    src: {{ _cilium_config.git_bastion_dir }}/manifests/cilium.v{{cilium_version}}/*
-    dest: {{ bootstrap_ocp_config_dir }}/manifests/
+    src: "{{ _cilium_config.git_bastion_dir }}/manifests/cilium.v{{cilium_version}}/*"
+    dest: "{{ bootstrap_ocp_config_dir }}/manifests/"
 
 - name: Copy cluster-network-02-config to cluster-network-02-config-local.yml to disable kube-proxy
   ansible.builtin.copy:
-    src: {{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config.yml
-    dest: {{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml
+    src: "{{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config.yml"
+    dest: "{{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml"
 
 - name: Replace apiVersion in cluster-network-02-config-local.yml
   ansible.builtin.lineinfile:
-    path: {{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml
+    path: "{{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml"
     search_string: 'apiVersion: config.openshift.io/v1'
     line: 'apiVersion: operator.openshift.io/v1'
 
 - name: Add deployKubeProxy at false in cluster-network-02-config-local.yml
   ansible.builtin.lineinfile:
-    path: {{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml
+    path: "{{ bootstrap_ocp_config_dir }}/manifests/cluster-network-02-config-local.yml"
     insertafter: 'spec:'
     line: '  deployKubeProxy: false'
 
 - name: Insert/Update eth0 configuration stanza in /etc/network/interfaces
         (it might be better to copy files into /etc/network/interfaces.d/)
   ansible.builtin.blockinfile:
-    path: {{ bootstrap_ocp_config_dir }}/manifests/cluster-network-06-cilium-00002-cilium-ee-olm-deployment.yaml
+    path: "{{ bootstrap_ocp_config_dir }}/manifests/cluster-network-06-cilium-00002-cilium-ee-olm-deployment.yaml"
     insertbefore: 'image:'
     block: |
         - name: KUBERNETES_SERVICE_HOST  #override the KUBERNETES apiserver.
