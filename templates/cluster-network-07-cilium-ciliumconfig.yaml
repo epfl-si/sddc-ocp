@@ -1,3 +1,23 @@
+{# Template for the file of the same name to feed to openshift-installer
+ # (directly as a file on the bootstrap VM for the case of a hub cluster,
+ # or via a ConfigMap that the operator consumes for a spoke cluster)
+ #
+ # Expected input variables:
+ #
+ # - networkConfig: should have the following shape,
+ #
+ #      networkConfig:
+ #        podIPs:
+ #          cidr: <IP>/<integer from 1 to 31>
+ #          hostPrefix: <integer from 1 to 31>
+ #        serviceIPs:
+ #          cidr: <IP>/<integer from 1 to 31>
+ #
+ # - cluster_name: The short name of the cluster, e.g. "fsd" or "mgmt"
+ #
+ # - cluster_base_domain: The remainder (“rightmost” part) of the cluster's DNS name,
+ #                        e.g. "ocp-t.epfl.ch"
+ #}
 apiVersion: cilium.io/v1alpha1
 kind: CiliumConfig
 metadata:
@@ -8,13 +28,14 @@ spec:
   securityContext:
     privileged: true
   kubeProxyReplacement: true
-  k8sServiceHost: "api."{{ cluster_name }}"."{{ cluster_base_domain }}
+  k8sServiceHost: "api.{{ cluster_name }}.{{ cluster_base_domain }}"
   k8sServicePort: 6443
   ipam:
     mode: "cluster-pool"
     operator:
-      clusterPoolIPv4PodCIDRList: {{ _it.podIPs | to_nice_yaml | indent(4) | trim }}
-      clusterPoolIPv4MaskSize: 23
+      clusterPoolIPv4PodCIDRList:
+        {{ networkConfig.podIPs | to_nice_yaml | indent(8) | trim }}
+      clusterPoolIPv4MaskSize: {{ networkConfig.podIPs.hostPrefix }}
   cni:
     binPath: "/var/lib/cni/bin"
     confPath: "/var/run/multus/cni/net.d"

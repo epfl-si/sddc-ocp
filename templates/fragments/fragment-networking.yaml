@@ -6,6 +6,7 @@
  # Expected input variables:
  #
  # - networkConfig: should have the following shape,
+ #
  #      networkConfig:
  #        podIPs:
  #          cidr: <IP>/<integer from 1 to 31>
