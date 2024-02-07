@@ -26,8 +26,9 @@ resources_openshift_clusters:
     apiVIPs:
       - 10.98.24.2
     ingressVIPs:
-      - 10.98.24.3  # We are not supposed to serve kitten GIFs out
-                    # of this one, but you never know...
+      - 10.98.24.3  # We are not supposed to serve kitten GIFs out of
+                    # this one, but we still need to serve its Web
+                    # console.
     machineIPs:
       # The DHCP range is only from 10.98.24.190 to 10.98.24.254.
       cidr: 10.98.24.0/24
