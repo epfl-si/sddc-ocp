@@ -52,13 +52,10 @@ controlPlane:
   platform: {}
   replicas: {{ _it.masters }}
 networking:
-  clusterNetwork:
-  - {{ _it.podIPs | to_nice_yaml | indent(4) | trim }}
   machineNetwork:
   - {{ _it.machineIPs | to_nice_yaml | indent(4) | trim }}
-  networkType: Cilium
-  serviceNetwork:
-  - {{ _it.serviceIPs.cidr }}
+  {{ lookup("template", "fragments/fragment-networking.yaml",
+          template_vars=dict(networkConfig=_it)) | indent(2) | trim }}
 platform:
   vsphere:
     cluster: {{ _it.vsphere_placement.cluster }}
