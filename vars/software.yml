@@ -1,0 +1,5 @@
+cilium:
+  manifests_version: 1.14.3
+  git_repo: "https://github.com/isovalent/olm-for-cilium.git"
+
+software_checkout_dir: "{{ xaasible_cache_dir }}"

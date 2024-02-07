@@ -2,6 +2,10 @@
 # rest.
 
 - tags: always
+  include_vars:
+    file: software.yml
+
+- tags: always
   include_tasks:
     file: preflight.yml
 
@@ -25,3 +29,12 @@
   tags:
     - init
     - init.pullsecret
+
+- name: Isovalent manifests for Cilium (from GitHub)
+  delegate_to: localhost
+  ansible.builtin.git:
+    repo: "{{ cilium.git_repo }}"
+    dest: "{{ software_checkout_dir }}/olm-for-cilium"
+  tags:
+    - init
+    - init.gitclone
