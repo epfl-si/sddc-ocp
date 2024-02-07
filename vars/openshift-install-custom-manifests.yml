@@ -1,0 +1,44 @@
+openshift_install_custom_manifests: >-
+  {{ _oiam_isovalent_configs_from_git
+  | combine({
+      "cluster-network-02-config-local.yml": _oiam_network_config_manifest,
+      "cluster-network-07-cilium-ciliumconfig.yaml":
+        lookup("template", "cluster-network-07-cilium-ciliumconfig.yaml",
+                           template_vars=dict(networkConfig=_oiam_network_config)),
+      "cluster-network-06-cilium-00002-cilium-olm-deployment.yaml":
+        _oiam_isovalent_configs_from_git["cluster-network-06-cilium-00002-cilium-olm-deployment.yaml"]
+          | regex_replace('^( *)(image:)', '\1  __MOAR_ENV_HERE__\n\1\2', multiline=True)
+          | replace("__MOAR_ENV_HERE__",  _oiam_kubernetes_env | indent(12) | trim),
+    })
+  }}
+
+_oiam_network_config_manifest: |
+  apiVersion: operator.openshift.io/v1
+  kind: Network
+  metadata:
+    name: cluster
+  spec:
+    deployKubeProxy: false
+    externalIP:
+      policy: {}
+    {{ lookup("template", "fragments/fragment-networking.yaml",
+             template_vars=dict(networkConfig=_oiam_network_config))
+             | indent(2) }}
+  status: {}
+
+_oiam_isovalent_configs_from_git: >-
+    {{ _oiam_isovalent_git_dir |
+    read_dir_struct("*.yaml") }}
+
+# Created by ../roles/init/tasks/main.yml
+_oiam_isovalent_git_dir: >-
+  {{ xaasible_cache_dir }}/olm-for-cilium/manifests/cilium.v{{ cilium.manifests_version }}
+
+_oiam_network_config: >-
+  {{ resources_openshift_clusters[inventory_hostname] }}
+
+_oiam_kubernetes_env: |
+  - name: KUBERNETES_SERVICE_HOST
+    value: "api.{{ inventory_hostname }}"
+  - name: KUBERNETES_SERVICE_PORT
+    value: "6443"

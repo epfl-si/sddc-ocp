@@ -9,6 +9,8 @@
     - versions.yml
     - ssh-public-keys.yml
     - access.yml
+    - software.yml
+    - openshift-install-custom-manifests.yml
 
 - name: "`openshift-install-config` Secret"
   kubernetes.core.k8s:
@@ -26,6 +28,16 @@
     ocp_config_resources: >-
       {{ resources_openshift_clusters[inventory_hostname] }}
 
+- name: '`ConfigMap/openshift-installer-custom-manifests`'
+  kubernetes.core.k8s:
+    definition:
+      kind: ConfigMap
+      metadata:
+        name: openshift-installer-custom-manifests
+        namespace: "{{ spoke_namespace_in_hub }}"
+      data: >-
+        {{ openshift_install_custom_manifests }}
+
 - name: '`ClusterDeployment`'
   register: _spoke_clusterdeployment
   kubernetes.core.k8s:
@@ -39,6 +51,9 @@
           name: "{{ spoke_clusterimageset_name }}"
         installConfigSecretRef:
           name: openshift-install-config
+        manifestsConfigMapRef:
+          name: openshift-installer-custom-manifests
+          namespace: "{{ spoke_namespace_in_hub }}"
       pullSecretRef:
         name: spoke-pull-secret
 
