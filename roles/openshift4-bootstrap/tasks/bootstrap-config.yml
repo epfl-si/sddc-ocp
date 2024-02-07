@@ -33,11 +33,6 @@
       cp {{ bootstrap_topdir }}/install-config.yaml {{ bootstrap_ocp_config_dir }}/
       openshift-install create manifests --dir {{ bootstrap_ocp_config_dir }}
 
-- name: Git clone repo isovalent
-  ansible.builtin.git:
-    repo: {{ _cilium_config.git_repo }}
-    dest: {{ _cilium_config.git_bastion_dir }}
-
 - name: Copy cilium configuration file to manifest dir
   ansible.builtin.copy:
     src: "{{ _cilium_config.git_bastion_dir }}/manifests/cilium.v{{cilium_version}}/*"
