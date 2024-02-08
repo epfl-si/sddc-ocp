@@ -39,6 +39,6 @@ _oiam_network_config: >-
 
 _oiam_kubernetes_env: |
   - name: KUBERNETES_SERVICE_HOST
-    value: "api.{{ inventory_hostname }}"
+    value: "{{ cluster_api_server }}"
   - name: KUBERNETES_SERVICE_PORT
     value: "6443"
