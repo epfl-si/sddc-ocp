@@ -28,7 +28,7 @@ spec:
   securityContext:
     privileged: true
   kubeProxyReplacement: true
-  k8sServiceHost: "api.{{ cluster_name }}.{{ cluster_base_domain }}"
+  k8sServiceHost: "{{ cluster_api_server }}"
   k8sServicePort: 6443
   ipam:
     mode: "cluster-pool"
