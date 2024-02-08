@@ -34,17 +34,6 @@
     - bastion
     - bastion.vm
 
-- tags: always
-  include_tasks:
-    file: bastion-get-IP.yml
-    apply:
-      tags: always
-      vars:
-        ansible_connection: local          # We don't know the IP yet
-        ansible_python_interpreter: "{{ ansible_playbook_python }}"
-      environment:
-        VMWARE_VALIDATE_CERTS: false
-
 - include_tasks:
     file: bastion-access.yml
     apply:

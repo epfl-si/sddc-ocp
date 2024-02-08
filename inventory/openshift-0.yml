@@ -26,6 +26,9 @@ bastions:
         {{ lookup("pipe", "keybase fs read " +
                           inventory_vsphere_credentials_keybase_file)
         | from_yaml }}
+    ansible_host: >-
+      {{ lookup("vmware_vm", {"guest_name": inventory_hostname},
+                credentials=inventory_vsphere_credentials) | vm_ipv4 }}
 
 openshift_clusters:
   vars:
