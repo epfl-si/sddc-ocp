@@ -188,7 +188,9 @@ Whoa.
 
 Would you be so kind as to copy and paste the following commands in your shell:
 
+   oc -n $ns delete clusterdeployment $ns
    oc delete managedcluster $ns
+   oc delete namespace $ns
 
 ... cause I sure ain't doing that for you.
 
