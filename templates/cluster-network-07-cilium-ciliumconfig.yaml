@@ -33,8 +33,7 @@ spec:
   ipam:
     mode: "cluster-pool"
     operator:
-      clusterPoolIPv4PodCIDRList:
-        {{ networkConfig.podIPs | to_nice_yaml | indent(8) | trim }}
+      clusterPoolIPv4PodCIDRList: "{{ networkConfig.podIPs.cidr }}"
       clusterPoolIPv4MaskSize: {{ networkConfig.podIPs.hostPrefix }}
   cni:
     binPath: "/var/lib/cni/bin"
