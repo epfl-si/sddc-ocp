@@ -16,7 +16,7 @@
     - inventory_vsphere_credentials.folder not in results_folder.folder_info.vmFolders.subfolders
     - installer_created_folder == False
 
-- name: Create '{{ vcenter.folder }}' in vCenter
+- name: Create '{{ inventory_vsphere_credentials.folder }}' in vCenter
   vcenter_folder:
     hostname: '{{ inventory_vsphere_credentials.host }}'
     username: '{{ inventory_vsphere_credentials.user }}'
@@ -26,6 +26,7 @@
     folder_name: '{{ inventory_vsphere_credentials.folder }}'
     folder_type: vm
     state: present
+  delegate_to: localhost
   when:
     - inventory_vsphere_credentials.folder not in results_folder.folder_info.vmFolders.subfolders
     - installer_created_folder == True
