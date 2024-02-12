@@ -26,9 +26,17 @@ bastions:
         {{ lookup("pipe", "keybase fs read " +
                           inventory_vsphere_credentials_keybase_file)
         | from_yaml }}
+    inventory_vsphere_vm_data: >-
+       {{ lookup("vmware_vm", {"guest_name": inventory_hostname},
+                credentials=inventory_vsphere_credentials) }}
+    # “if” below should be read as “if and when”, as the expansion of
+    # `inventory_vsphere_vm_data` may change over time (i.e. after
+    # ../roles/bastion-vm/tasks/bastion-vm.yml completes):
     ansible_host: >-
-      {{ lookup("vmware_vm", {"guest_name": inventory_hostname},
-                credentials=inventory_vsphere_credentials) | vm_ipv4 }}
+       {{ inventory_vsphere_vm_data | vm_ipv4
+       if inventory_vsphere_vm_data is defined
+       else "[VM %s not found in vSphere]" % inventory_hostname
+       }}
 
 openshift_clusters:
   vars:

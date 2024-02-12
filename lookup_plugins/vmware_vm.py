@@ -1,5 +1,6 @@
 from ansible_collections.community.vmware.plugins.module_utils.vmware import connect_to_api, get_all_objs
 from ansible.plugins.lookup import LookupBase
+from jinja2.runtime import Undefined
 from pyVmomi import vim
 
 # TODO: cache this on disk. (As each Ansible task creates another
@@ -23,5 +24,9 @@ class LookupModule(LookupBase):
 
             return True
 
-        return [vm for vm in all_vms(hostname, port, username, password, validate_certs)
-                if matches(vm, terms)]
+        matched = [vm for vm in all_vms(hostname, port, username, password, validate_certs)
+                   if matches(vm, terms)]
+        if len(matched) == 0:
+            return [Undefined('lookup("vmware_vm", %s): not found in vSphere' % terms)]
+        else:
+            return matched
