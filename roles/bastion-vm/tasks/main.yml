@@ -34,6 +34,11 @@
     - bastion
     - bastion.vm
 
+- name: "Encache bastion VM IP"
+  tags: always
+  set_fact:
+    ansible_host: "{{ ansible_host }}"
+
 - include_tasks:
     file: bastion-access.yml
     apply:
