@@ -80,7 +80,6 @@
     ocp_config_pull_secret: "{{ xaasible_pull_secret }}"
     ocp_config_resources: >-
       {{ resources_openshift_clusters[inventory_hostname] }}
-    ocp_config_is_for_hive: true
 
 - name: ClusterDeployment object
   register: _spoke_clusterdeployment
