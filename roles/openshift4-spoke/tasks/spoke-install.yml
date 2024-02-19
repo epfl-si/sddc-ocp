@@ -65,7 +65,7 @@
     - ssh-public-keys.yml
     - access.yml
 
-- name: openshift-install-config secret
+- name: "`openshift-install-config` Secret"
   kubernetes.core.k8s:
     definition:
       kind: Secret
