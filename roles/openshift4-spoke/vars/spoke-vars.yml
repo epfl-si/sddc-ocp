@@ -15,3 +15,12 @@ spoke_kubeadmin_ownerReference:
 
 spoke_kubeconfig_of_hub: >-
   {{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}
+
+_spoke_reconnected_secrets_prefix: >-
+  {{ spoke_namespace_in_hub }}-reconnected
+
+spoke_reconnected_secret_admin_kubeconfig: >-
+  {{ _spoke_reconnected_secrets_prefix }}-admin-kubeconfig
+
+spoke_reconnected_secret_admin_password: >-
+  {{ _spoke_reconnected_secrets_prefix }}-admin-password

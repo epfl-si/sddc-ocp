@@ -1,3 +1,6 @@
+# Kubernetes objects whose existence and contents don't depend on
+# whether we will be creating the spoke cluster, or reconnecting to it
+
 - name: ManagedCluster object (non-namespaced; creates namespace)
   kubernetes.core.k8s:
     definition:

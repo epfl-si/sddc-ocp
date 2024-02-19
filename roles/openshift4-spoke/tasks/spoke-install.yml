@@ -12,47 +12,94 @@
     - ssh-public-keys.yml
     - access.yml
 
-- name: "`openshift-install-config` Secret"
-  kubernetes.core.k8s:
-    definition:
-      kind: Secret
-      metadata:
-        name: openshift-install-config
-        namespace: "{{ spoke_namespace_in_hub }}"
-      stringData:
-        "install-config.yaml": >-
-          {{ lookup("template", "ocp-install-config.yaml") }}
-  vars:
-    # The template explicitly expects the following variables:
-    ocp_config_pull_secret: "{{ xaasible_pull_secret }}"
-    ocp_config_resources: >-
-      {{ resources_openshift_clusters[inventory_hostname] }}
+- tags: always
+  set_fact:
+    spoke_reconnect_info: >-
+      {{ lookup("existing_cluster_details", kubeconfig=xaasible_kubeconfig) | default(None) }}
+    spoke_clusterdeployment_is_missing: >-
+      {{ 0 == (query("kubernetes.core.k8s", kubeconfig=spoke_kubeconfig_of_hub,
+                     kind="ClusterDeployment", namespace=spoke_namespace_in_hub) | length) }}
 
-- name: ConfigMap for customized install manifests
-  kubernetes.core.k8s:
-    definition:
-      kind: ConfigMap
-      metadata:
-        name: openshift-installer-custom-manifests
-        namespace: "{{ spoke_namespace_in_hub }}"
-      data: >-
-        {{ openshift_install_custom_manifests }}
+- when: spoke_clusterdeployment_is_missing
+  block:
 
-- name: ClusterDeployment object
-  register: _spoke_clusterdeployment
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: hive.openshift.io/v1
-      kind: ClusterDeployment
-      metadata:
-        # Just like the non-namespaced ManagedCluster object creates a
-        # namespace with the same name, the Hive operator assumes that
-        # ClusterDeployment objects must have the same name as the
-        # namespace they live in for the “import cluster” feature to
-        # work.
-        name: "{{ spoke_namespace_in_hub }}"
-        namespace: "{{ spoke_namespace_in_hub }}"
-      spec:
+  - when: spoke_reconnect_info != None
+    name: Admin kubeconfig to access reconnected spoke (Secret)
+    kubernetes.core.k8s:
+      definition:
+        kind: Secret
+        metadata:
+          name: "{{ spoke_reconnected_secret_admin_kubeconfig }}"
+          namespace: "{{ spoke_namespace_in_hub }}"
+        stringData:
+          kubeconfig: >-
+            {{ spoke_reconnect_info.kubeconfig }}
+
+  - when: spoke_reconnect_info != None
+    name: Admin password to reconnected spoke (Secret)
+    kubernetes.core.k8s:
+      definition:
+        kind: Secret
+        metadata:
+          name: "{{ spoke_reconnected_secret_admin_password }}"
+          namespace: "{{ spoke_namespace_in_hub }}"
+        stringData: >-
+          {{ spoke_reconnect_info.admin_credentials }}
+
+  - when: spoke_reconnect_info == None
+    name: "`openshift-install-config` Secret"
+    kubernetes.core.k8s:
+      definition:
+        kind: Secret
+        metadata:
+          name: openshift-install-config
+          namespace: "{{ spoke_namespace_in_hub }}"
+        stringData:
+          "install-config.yaml": >-
+            {{ lookup("template", "ocp-install-config.yaml") }}
+    vars:
+      # The template explicitly expects the following variables:
+      ocp_config_pull_secret: "{{ xaasible_pull_secret }}"
+      ocp_config_resources: >-
+        {{ resources_openshift_clusters[inventory_hostname] }}
+
+  - when: spoke_reconnect_info == None
+    name: ConfigMap for customized install manifests
+    kubernetes.core.k8s:
+      definition:
+        kind: ConfigMap
+        metadata:
+          name: openshift-installer-custom-manifests
+          namespace: "{{ spoke_namespace_in_hub }}"
+        data: >-
+          {{ openshift_install_custom_manifests }}
+
+  - name: ClusterDeployment object
+    register: _spoke_clusterdeployment
+    kubernetes.core.k8s:
+      definition:
+        apiVersion: hive.openshift.io/v1
+        kind: ClusterDeployment
+        metadata:
+          # Just like the non-namespaced ManagedCluster object creates a
+          # namespace with the same name, the Hive operator assumes that
+          # ClusterDeployment objects must have the same name as the
+          # namespace they live in for the “import cluster” feature to
+          # work.
+          name: "{{ spoke_namespace_in_hub }}"
+          namespace: "{{ spoke_namespace_in_hub }}"
+        spec: >-
+          {{ _spec_always
+          | combine(_spec_provisioning if spoke_reconnect_info == None
+                       else _spec_reconnect) }}
+    vars:
+      _resources: >-
+        {{ resources_openshift_clusters[inventory_hostname] }}
+      _vsphere_placement: >-
+        {{ _resources.vsphere_placement }}
+      _network_name: >-
+        {{ _vsphere_placement.network.name }}
+      _spec_always:
         baseDomain: "{{ cluster_base_domain }}"
         clusterName: "{{ cluster_name }}"
         platform:
@@ -74,6 +121,7 @@
               name: spoke-vsphere-credentials
             certificatesSecretRef:
               name: vcenter-cert-bundle
+      _spec_provisioning:
         provisioning:
           imageSetRef:
             name: "{{ spoke_clusterimageset_name }}"
@@ -84,13 +132,15 @@
             namespace: "{{ spoke_namespace_in_hub }}"
         pullSecretRef:
           name: spoke-pull-secret
-  vars:
-    _resources: >-
-      {{ resources_openshift_clusters[inventory_hostname] }}
-    _vsphere_placement: >-
-      {{ _resources.vsphere_placement }}
-    _network_name: >-
-      {{ _vsphere_placement.network.name }}
+      _spec_reconnect:
+        installed: true
+        clusterMetadata:
+          adminKubeconfigSecretRef:
+            name: "{{ spoke_reconnected_secret_admin_kubeconfig }}"
+          adminPasswordSecretRef:
+            name: "{{ spoke_reconnected_secret_admin_password }}"
+          clusterID: "{{ spoke_reconnect_info.clusterID }}"
+          infraID: "{{ spoke_reconnect_info.infraID }}"
 
 - name: KlusterletAddonConfig (declares feature set for the hub-spoke registration)
   kubernetes.core.k8s:
@@ -113,7 +163,9 @@
           enabled: true
 
 - run_once: true
-  when: _spoke_clusterdeployment is changed
+  when:
+  - (_spoke_clusterdeployment | default({})) is changed
+  - spoke_reconnect_info == None
   pause:
     echo: false
     seconds: 1
@@ -133,12 +185,12 @@
 
 - name: >-
     {{ "Wait for the spoke cluster(s) to come up"
-    if _spoke_clusterdeployment is changed
+    if (_spoke_clusterdeployment | default({})) is changed
     else "Check that the spoke cluster(s) are up"
     }}
   retries: >-
     {{ 50
-    if _spoke_clusterdeployment is changed else 1 }}
+    if (_spoke_clusterdeployment | default({})) is changed else 1 }}
   delay: 60
   register: _oc_get_clusterdeployment_installed
   until: >-
