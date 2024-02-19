@@ -1,13 +1,29 @@
 - tags: always
   include_vars: spoke-vars.yml
 
+- name: "Spoke cluster: basic objects"
+  include_tasks:
+    file: spoke-prep.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.spoke
+        - openshift.spoke.install
+        # During install, talk to the parent (hub) cluster:
+      environment:
+        KUBECONFIG: >-
+          {{ spoke_kubeconfig_of_hub }}
+  tags:
+    - openshift
+    - openshift.spoke
+    - openshift.spoke.install
+
 - name: Install spoke cluster
   when: inventory_manually_created_cluster_name is not defined
   include_tasks:
     file: spoke-install.yml
     apply:
       environment:
-        # During install, talk to the parent (hub) cluster:
         KUBECONFIG: >-
           {{ spoke_kubeconfig_of_hub }}
       tags:
