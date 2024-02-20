@@ -12,16 +12,16 @@
   vars:
     _oauth_fqdn: "oauth-openshift.apps.{{ inventory_hostname }}"
 
-- name: Obtain kubeconfigs
-  no_log: true
+- name: Obtain certificate-authority-data from kubeconfig
   changed_when: false
   shell:
     cmd: |
       set -e -x
       secret_name="$({{ _oc_in_hub }} get secret -o name \
                      | grep 'secret/.*-admin-kubeconfig')"
-      {{ _oc_in_hub }} extract "$secret_name" --to=-
-  register: _kubeconfig_secret
+      {{ _oc_in_hub }} extract "$secret_name" --to=- \
+                     | sed -n 's/^ *certificate-authority-data: \(.*\)/\1/p'
+  register: _certificate_authority_data
   vars:
     _oc_in_hub: >-
       oc -n "{{ spoke_namespace_in_hub }}"
@@ -29,13 +29,9 @@
 - name: Spoke CA bundles
   copy:
     dest: "{{ cluster_local_ca_bundle_file }}"
-    content: >-
-      {{ _kubeconfig.clusters[0].cluster['certificate-authority-data']
-      | b64decode }}
+    content: |
+      {{ _certificate_authority_data.stdout | b64decode }}
       {{ _ingress_certificates.stdout }}
-  vars:
-    _kubeconfig: >-
-      {{ _kubeconfig_secret.stdout | from_yaml }}
 
 - shell:
     creates: "{{ xaasible_cache_dir }}/xaasctl-inventory.sh"
