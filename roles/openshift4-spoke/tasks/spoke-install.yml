@@ -4,12 +4,29 @@
     - versions.yml
     - resources.yml
 
-- name: Namespace for the managed cluster
+- name: ManagedCluster object (non-namespaced; creates namespace)
   kubernetes.core.k8s:
     definition:
-      kind: Namespace
+      apiVersion: cluster.open-cluster-management.io/v1
+      kind: ManagedCluster
       metadata:
         name: "{{ spoke_namespace_in_hub }}"
+        labels:
+          cloud: auto-detect
+          vendor: auto-detect
+      spec:
+        hubAcceptsClient: true
+
+- name: Wait for spoke namespace to be created
+  retries: 6
+  delay: 10
+  register: _oc_get_spoke_namespace
+  until: >-
+    "namespace/%s" % spoke_namespace_in_hub == _oc_get_spoke_namespace.stdout
+  changed_when: false
+  shell:
+    cmd: |
+      oc get ns {{ spoke_namespace_in_hub }} -o name
 
 - name: Pull secret for spoke (same as hub)
   kubernetes.core.k8s:
@@ -87,16 +104,11 @@
       apiVersion: hive.openshift.io/v1
       kind: ClusterDeployment
       metadata:
-        # There appears to be some assumption somewhere in the whole
-        # RedHat enchilada of code, that ClusterDeployment objects
-        # must have the same name as the namespace they live in. At
-        # least the clicky wizard won't let you do things otherwise;
-        # and if you set e.g. `{{ inventory_hostname }}` as the name
-        # in the line below, you can't “import cluster“ — when you
-        # try, you get an error report that reads something like
-        # `fsd.ocp-test.epfl.ch: no such namespace`, which is evidence
-        # that some pod down below (not just the clicky) is making the
-        # aforementioned assumption.
+        # Just like the non-namespaced ManagedCluster object creates a
+        # namespace with the same name, the Hive operator assumes that
+        # ClusterDeployment objects must have the same name as the
+        # namespace they live in for the “import cluster” feature to
+        # work.
         name: "{{ spoke_namespace_in_hub }}"
         namespace: "{{ spoke_namespace_in_hub }}"
       spec:
@@ -135,25 +147,6 @@
       {{ _resources.vsphere_placement }}
     _network_name: >-
       {{ _vsphere_placement.network.name }}
-
-# The above is enough to get the spoke cluster going (i.e. it installs
-# and you can authenticate against it; and the “Import cluster” clicky
-# works). For “auto-import”, we need more objects in the hub cluster,
-# as seen in the following places in the documentation:
-# https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/clusters/cluster_mce_overview#cluster-lifecycle-arch
-# https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes/2.8/html/clusters/cluster_mce_overview#importing-managed-cluster-cli
-- name: ManagedCluster object (for inter-cluster registration)
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: cluster.open-cluster-management.io/v1
-      kind: ManagedCluster
-      metadata:
-        name: "{{ spoke_namespace_in_hub }}"
-        labels:
-          cloud: auto-detect
-          vendor: auto-detect
-      spec:
-        hubAcceptsClient: true
 
 - name: KlusterletAddonConfig (declares feature set for the hub-spoke registration)
   kubernetes.core.k8s:
