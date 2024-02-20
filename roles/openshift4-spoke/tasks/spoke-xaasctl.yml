@@ -1,6 +1,3 @@
-- tags: always
-  include_vars: spoke-vars.yml
-
 - name: Obtain ingress certificates
   changed_when: false
   shell: |

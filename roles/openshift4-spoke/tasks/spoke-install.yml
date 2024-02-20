@@ -3,7 +3,6 @@
   with_items:
     - versions.yml
     - resources.yml
-    - spoke-vars.yml
 
 - name: Namespace for the managed cluster
   kubernetes.core.k8s:

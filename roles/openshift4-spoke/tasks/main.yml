@@ -1,3 +1,6 @@
+- tags: always
+  include_vars: spoke-vars.yml
+
 - name: Install spoke cluster
   when: inventory_manually_created_cluster_name is not defined
   include_tasks:
