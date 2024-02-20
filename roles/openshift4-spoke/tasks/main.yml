@@ -9,7 +9,7 @@
       environment:
         # During install, talk to the parent (hub) cluster:
         KUBECONFIG: >-
-          {{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}
+          {{ spoke_kubeconfig_of_hub }}
       tags:
         - openshift
         - openshift.spoke
@@ -34,7 +34,7 @@
       # (hub) cluster:
       environment:
         KUBECONFIG: >-
-          {{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}
+          {{ spoke_kubeconfig_of_hub }}
   tags:
     - openshift
     - openshift.spoke

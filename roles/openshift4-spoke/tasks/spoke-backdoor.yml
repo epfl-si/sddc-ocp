@@ -7,7 +7,7 @@
     cmd: |
       set -e -x
       namespace="{{ spoke_namespace_in_hub }}"
-      export KUBECONFIG="{{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}"
+      export KUBECONFIG="{{ spoke_kubeconfig_of_hub }}"
       oc get secret -o name -n "$namespace" | (while read secret_name; do
           case "$secret_name" in
             secret/*-admin-password)
