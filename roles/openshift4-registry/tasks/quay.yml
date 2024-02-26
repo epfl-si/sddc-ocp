@@ -114,6 +114,9 @@
             (memberof={{ _superuser_sgroup }})
           LDAP_ADMIN_DN: {{ inventory_quay_credentials.ldap.bind_dn }}
           LDAP_ADMIN_PASSWD: {{ inventory_quay_credentials.ldap.bind_password }}
+          # Disables the “Please Verify” pop-up, as there is no way that it could to
+          # the right thing with Tequila:
+          FRESH_LOGIN_TIMEOUT: 365d
           {# The remainder below was cargo-culted from the operator's
            # default configuration: #}
           ALLOW_PULLS_WITHOUT_STRICT_LOGGING: false
