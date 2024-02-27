@@ -144,10 +144,20 @@
         namespace: "{{ quay_namespace }}"
       spec:
         configBundleSecret: si-registry-config-bundle
-      # The default configuration sets all `spec.components` to
+        components:
+          - kind: quay
+            managed: true
+            overrides: >-
+              {{ _debuglog_overrides if (quay_debug | default(False)) else {} }}
+      # The default configuration sets all other `spec.components` to
       # `managed: true`, except for the object storage; which is
       # exactly what we want.
   register: _quay_registry
+  vars:
+    _debuglog_overrides:
+      env:
+        - name: DEBUGLOG
+          value: "true"
 
 - name: Wait for Quay pods to go into running state
   changed_when: false
