@@ -36,6 +36,7 @@
     - openshift
     - openshift.quay
     - openshift.quay.server
+    - openshift.quay.server.serviceaccount.delete
     - openshift.quay.server.organization.delete
 
 - name: Quay bridge

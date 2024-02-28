@@ -200,6 +200,19 @@
   #   list(data.database.OAuthApplication.select())
   #
   block:
+    - name: 'Delete {{ quay_bridge_service_account }} account in Quay'
+      when: >-
+        "openshift.quay.server.serviceaccount.delete" in ansible_run_tags
+      flask_script:
+        script: |
+          from data.model.user import get_user, delete_user
+          service_account_name = "{{ quay_bridge_service_account }}"
+
+          service_account = get_user(service_account_name)
+          if service_account is not None:
+            delete_user(service_account, [])
+            signal_changed("Deleted service account %s" % service_account_name)
+
     - name: '{{ quay_bridge_service_account }} account in Quay'
       flask_script:
         postcondition_class: |
