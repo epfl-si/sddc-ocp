@@ -95,17 +95,16 @@
           from base64 import b64encode
 
           from data.database import User, OAuthApplication, OAuthAccessToken
-          from data.model.organization import get_organization
+          from data.model.user import get_user
           from data.model.oauth import create_user_access_token, ACCESS_TOKEN_PREFIX_LENGTH
 
-          org_name       = "{{ quay_bridge_organization_name }}"
-          oauth_app_name = "{{ quay_bridge_oauth_app_name }}"
-          oauth_scope    = "{{ quay_bridge_token_scopes }}"
-          expires_in     =  {{ quay_bridge_token_expiration_delay_seconds }}
+          service_account_name = "{{ quay_bridge_service_account }}"
+          oauth_app_name       = "{{ quay_bridge_oauth_app_name }}"
+          oauth_scope          = "{{ quay_bridge_token_scopes }}"
+          expires_in           =  {{ quay_bridge_token_expiration_delay_seconds }}
 
-          org = get_organization(org_name)
-          oauth_app = OAuthApplication.select().join(User).where(
-               User.username == org_name, OAuthApplication.name == oauth_app_name).get()
+          user = get_user(service_account_name)
+          oauth_app = OAuthApplication.select().where(OAuthApplication.name == oauth_app_name).get()
 
           {% if "previous_token" in _checked %}
           previous_token = "{{ _checked.previous_token }}"
@@ -116,7 +115,7 @@
           {% endif %}
 
           created, access_token = create_user_access_token(
-                org, oauth_app.client_id,
+                user, oauth_app.client_id,
                 oauth_scope, expires_in=expires_in)
           signal_changed("New token created with ID %d" % created.id)
           result['access_token_base64'] = b64encode(access_token.encode('ascii'))
