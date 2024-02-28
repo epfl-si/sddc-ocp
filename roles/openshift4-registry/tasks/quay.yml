@@ -192,6 +192,19 @@
   #   list(data.database.OAuthApplication.select())
   #
   block:
+    - name: '{{ quay_bridge_service_account }} account in Quay'
+      flask_script:
+        postcondition_class: |
+          from data.model.user import get_user, create_user_noverify
+          class QuayBridgeServiceAccount(Postcondition):
+            username = '{{ quay_bridge_service_account }}'
+
+            def holds(self):
+              return get_user(self.username) is not None
+
+            def enforce(self):
+              create_user_noverify(self.username, None, email_required=False).save()
+
     - name: "Delete {{ quay_bridge_organization_name }} organization"
       tags:
         - openshift.quay.server.organization.delete
@@ -215,11 +228,13 @@
     - name: "{{ quay_bridge_organization_name }} organization"
       flask_script:
         postcondition_class: |
-          from data.model import user, InvalidOrganizationException
-          from data.model.organization import get_organization
+          from data.model import InvalidOrganizationException
+          from data.model.user import get_user
+          from data.model.organization import get_organization, create_organization
 
-          org_name = "{{ quay_bridge_organization_name }}"
-          org_email = "{{ quay_bridge_organization_email }}"
+          org_name             = "{{ quay_bridge_organization_name }}"
+          org_email            = "{{ quay_bridge_organization_email }}"
+          service_account_name = "{{ quay_bridge_service_account }}"
 
           class QuayOrganization(Postcondition):
             def holds(self):
@@ -230,12 +245,7 @@
                 return False
 
             def enforce(self):
-              # Paraphrased from `data.model.organization.create_organization`,
-              # except without the part where an organization must have an owner:
-              org = user.create_user_noverify(
-                org_name, org_email, email_required=True, is_possible_abuser=False)
-              org.organization = True
-              org.save()
+              create_organization(org_name, org_email, get_user(service_account_name))
               signal_changed("%s organization created" % org_name)
 
     - name: "OAuth application for {{ quay_bridge_organization_name }} organization"
