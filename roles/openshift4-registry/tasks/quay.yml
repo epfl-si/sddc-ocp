@@ -107,11 +107,10 @@
           AUTHENTICATION_TYPE: LDAP
           LDAP_URI: ldaps://scoldap.epfl.ch/
           LDAP_BASE_DN:
-            - "OU=users"
             - "O=epfl"
             - "C=ch"
           LDAP_SUPERUSER_FILTER: >-
-            (memberof={{ _superuser_sgroup }})
+            (|(memberof={{ _superuser_sgroup }})(cn={{ quay_bridge_service_account }}))
           LDAP_ADMIN_DN: {{ inventory_quay_credentials.ldap.bind_dn }}
           LDAP_ADMIN_PASSWD: {{ inventory_quay_credentials.ldap.bind_password }}
           # Disables the “Please Verify” pop-up, as there is no way that it could to
@@ -171,6 +170,17 @@
     cmd: |
       oc -n {{ quay_namespace}} exec -i {{ quay_pod_names[0] }} -- true
 
+- name: "Ensure that {{ quay_bridge_service_account }} exists in LDAP"
+  run_once: true
+  assert:
+    that: >-
+      lookup("scoldap", quay_bridge_service_account, by="cn", get="ou")
+      == "services"
+    fail_msg: |
+      {{ quay_bridge_service_account }} not found in SCOLDAP.
+
+      Please (re)create it at https://services.epfl.ch/ and try again.
+
 - vars:
     ansible_connection: oc
     ansible_oc_pod: "{{ quay_pod_names[0] }}"
@@ -195,15 +205,23 @@
     - name: '{{ quay_bridge_service_account }} account in Quay'
       flask_script:
         postcondition_class: |
+          from app import usermanager
           from data.model.user import get_user, create_user_noverify
           class QuayBridgeServiceAccount(Postcondition):
             username = '{{ quay_bridge_service_account }}'
 
             def holds(self):
-              return get_user(self.username) is not None
+              if usermanager.is_superuser(self.username):
+                return True
+
+              if get_user(self.username) is None:
+                return False
+
+              raise AttributeError("%s must be a superuser account in Quay — Check Quay config" % self.username)
 
             def enforce(self):
               create_user_noverify(self.username, None, email_required=False).save()
+              self.recheck()
 
     - name: "Delete {{ quay_bridge_organization_name }} organization"
       tags:
