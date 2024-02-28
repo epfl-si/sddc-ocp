@@ -19,7 +19,7 @@ quay_access_groups:
 quay_bridge_quay_cluster: "{{ inventory_hub_cluster | default(inventory_hostname) }}"
 quay_bridge_our_clusterid: >-
   {{ inventory_hostname | regex_replace("[.].*$", "") }}
-# As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.9/html/manage_red_hat_quay/quay-bridge-operator#setting-up-quay-for-qbo point 7 (translated into OAuthese):
+# As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.8/html/manage_red_hat_quay/quay-bridge-operator#setting-up-quay-for-qbo point 7 (translated into OAuthese):
 quay_bridge_token_scopes: >-
   org:admin
   repo:admin

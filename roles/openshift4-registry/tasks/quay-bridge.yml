@@ -127,7 +127,7 @@
           apiVersion: v1
           kind: Secret
           metadata:
-            namespace: openshift-operators   # As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.9/html/manage_red_hat_quay/quay-bridge-operator#creating-ocp-secret-for-oauth-token
+            namespace: openshift-operators   # As per https://access.redhat.com/documentation/en-us/red_hat_quay/3.8/html/manage_red_hat_quay/quay-bridge-operator#creating-ocp-secret-for-oauth-token
             name: "{{ quay_bridge_secret_name }}"
           data:
             token: >-
