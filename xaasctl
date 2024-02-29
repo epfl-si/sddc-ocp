@@ -123,20 +123,33 @@ MOLLY_GUARD
 
 log_in_to_cluster__spoke () {
     local fqdn=$1; shift
-    log_in_to_cluster "$(hub_fqdn_of_fqdn "$fqdn")" >/dev/null
 
     local cluster="$(cluster_of_fqdn "$fqdn")"
     local namespace="$(eval "cluster_${cluster}_cluster_hub_namespace")"
     local server="$(cluster_k8s_api_endpoint "$fqdn")"
     local ca_bundle="$(eval "cluster_${cluster}_ca_bundle")"
 
+    local subkubeconfig
+    local fqdn_hub="$(hub_fqdn_of_fqdn "$fqdn")"
+    case "$KUBECONFIG" in
+        *xaasible-state-cache/*)
+            subkubeconfig="$PWD/xaasible-state-cache/kubeconfig-$fqdn_hub" ;;
+        *)
+            subkubeconfig="$KUBECONFIG" ;;
+    esac
+
     local secret_name
-    oc get secret -o name -n "$namespace" | while read secret_name; do
+
+    (
+        export KUBECONFIG="$subkubeconfig"
+        log_in_to_cluster__bastion "$fqdn_hub" >/dev/null
+        oc get secret -o name -n "$namespace"
+    ) | while read secret_name; do
         case "$secret_name" in
             secret/*-admin-password)
-                local username="$(oc get -n "$namespace" "$secret_name" \
+                local username="$(KUBECONFIG=$subkubeconfig oc get -n "$namespace" "$secret_name" \
                   -o go-template --template="{{.data.username | base64decode}}")"
-                local password="$(oc get -n "$namespace" "$secret_name" \
+                local password="$(KUBECONFIG=$subkubeconfig oc get -n "$namespace" "$secret_name" \
                   -o go-template --template="{{.data.password | base64decode}}")"
                 oc login --certificate-authority="$ca_bundle" \
                      -u "$username" --password="$password" --server="$server"
