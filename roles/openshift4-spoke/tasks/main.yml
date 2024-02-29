@@ -19,10 +19,6 @@
   include_tasks:
     file: spoke-install.yml
     apply:
-      environment:
-        # During install, talk to the parent (hub) cluster:
-        KUBECONFIG: >-
-          {{ spoke_kubeconfig_of_hub }}
       tags:
         - openshift
         - openshift.spoke
@@ -43,11 +39,6 @@
       delegate_to: localhost
       vars:
         ansible_connection: local
-      # Likewise, we have to pick up CA bundles etc. from the parent
-      # (hub) cluster:
-      environment:
-        KUBECONFIG: >-
-          {{ spoke_kubeconfig_of_hub }}
   tags:
     - openshift
     - openshift.spoke
@@ -72,7 +63,7 @@
         - openshift.spoke
         - openshift.spoke.backdoor
       environment:
-        KUBECONFIG: "{{ xaasible_kubeconfig }}"  # Unless stipulated otherwise inside spoke-backdoor.yml
+        KUBECONFIG: "{{ xaasible_kubeconfig }}"  # Unless countermanded inside spoke-backdoor.yml
   tags:
     - openshift
     - openshift.spoke

@@ -12,6 +12,3 @@ spoke_kubeadmin_ownerReference:
     {{ lookup("pipe",
     "KUBECONFIG={{ xaasible_kubeconfig }} oc -n kube-system get secret kubeadmin
     -o jsonpath='{.metadata.uid}'") }}
-
-spoke_kubeconfig_of_hub: >-
-  {{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}

@@ -44,7 +44,13 @@
   gather_facts: no
   roles:
     - role: roles/openshift4-spoke
+      # Unless specified otherwise in the role files, we talk to the
+      # *hub* cluster when installing or reconnecting to spokes.
+      environment:
+        KUBECONFIG: '{{ spoke_kubeconfig_of_hub }}'
       vars:
+        spoke_kubeconfig_of_hub: >-
+          {{ hostvars[inventory_hub_cluster].xaasible_kubeconfig }}
         ansible_connection: local
         ansible_python_interpreter: "{{ xaasible_python_shim }}"
         # TODO: this assumes that all hubs have a bastion (and is
