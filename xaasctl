@@ -133,7 +133,20 @@ log_in_to_cluster__spoke () {
     local fqdn_hub="$(hub_fqdn_of_fqdn "$fqdn")"
     case "$KUBECONFIG" in
         *xaasible-state-cache/*)
-            subkubeconfig="$PWD/xaasible-state-cache/kubeconfig-$fqdn_hub" ;;
+            subkubeconfig="$PWD/xaasible-state-cache/kubeconfig-$fqdn_hub"
+            # There used to be a time when this here case statement
+            # didn't exist... Which means that *some*
+            # xaasible-state-cache/kubeconfig's out there contain
+            # unwanted credentials.
+            local context_name
+            oc config get-contexts -o name | while read context_name; do
+                if echo "$context_name" | grep -q "$fqdn"; then
+                    oc config use-context "$context_name"
+                else
+                    oc config delete-context "$context_name"
+                fi
+            done
+            ;;
         *)
             subkubeconfig="$KUBECONFIG" ;;
     esac
