@@ -1,6 +1,19 @@
 - tags: always
   include_vars: spoke-vars.yml
 
+- name: "Spoke cluster: prepare"
+  include_tasks:
+    file: spoke-prep.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.spoke
+        - openshift.spoke.prep
+  tags:
+    - openshift
+    - openshift.spoke
+    - openshift.spoke.prep
+
 - name: Install spoke cluster
   when: inventory_manually_created_cluster_name is not defined
   include_tasks:
