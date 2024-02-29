@@ -40,23 +40,35 @@
   vars:
     _oauth_fqdn: "oauth-openshift.apps.{{ inventory_hostname }}"
 
-- name: Obtain certificate-authority-data from kubeconfig
+- name: Obtain spoke loadbalancer CA certificate
   changed_when: false
   shell:
     cmd: |
       set -e -x
+
+      # Best if we can get that info from the horse's mouth (meaning
+      # that we were already successfully logged into the cluster
+      # somehow; e.g. because we are reconnecting):
+      if env KUBECONFIG="{{ xaasible_kubeconfig }}" \
+        oc -n openshift-kube-apiserver-operator get secret/loadbalancer-serving-signer \
+        {% raw %} -o template='{{ index .data "tls.crt" }}' {% endraw %} ; then
+        exit 0
+      fi
+
+      # Second best is to get it from the hub cluster:
       secret_name="$({{ _oc_in_hub }} get secret -o name \
                      | grep 'secret/.*-admin-kubeconfig')"
       {{ _oc_in_hub }} extract "$secret_name" --to=- \
                      | sed -n 's/^ *certificate-authority-data: \(.*\)/\1/p'
-  register: _certificate_authority_data
+  register: _spoke_lb_signer
   vars:
     _oc_in_hub: >-
       oc -n "{{ spoke_namespace_in_hub }}"
 
-- name: Spoke CA bundles
+- name: 'Spoke CA bundles under `{{ cluster_local_ca_bundle_file | dirname }}/`'
   copy:
     dest: "{{ cluster_local_ca_bundle_file }}"
     content: |
-      {{ _certificate_authority_data.stdout | b64decode }}
+      {{ _spoke_lb_signer.stdout | b64decode }}
+
       {{ _ingress_certificates.stdout }}

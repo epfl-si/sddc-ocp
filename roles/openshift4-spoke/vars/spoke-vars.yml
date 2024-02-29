@@ -12,3 +12,12 @@ spoke_kubeadmin_ownerReference:
     {{ lookup("pipe",
     "KUBECONFIG={{ xaasible_kubeconfig }} oc -n kube-system get secret kubeadmin
     -o jsonpath='{.metadata.uid}'") }}
+
+_spoke_reconnected_secrets_prefix: >-
+  {{ spoke_namespace_in_hub }}-reconnected
+
+spoke_reconnected_secret_admin_kubeconfig: >-
+  {{ _spoke_reconnected_secrets_prefix }}-admin-kubeconfig
+
+spoke_reconnected_secret_admin_password: >-
+  {{ _spoke_reconnected_secrets_prefix }}-admin-password

@@ -1,16 +1,12 @@
 - tags: always
   include_vars: "{{ item }}"
   with_items:
-    - versions.yml
     - resources.yml
-
-- tags: always
-  include_vars: "{{ item }}"
-  with_items:
     # The `ocp-install-config.yaml` template in the next task below
     # wants these, so as to set up ssh access to managed nodes (and
     # also, https://github.com/ansible/ansible/issues/57751 forces us
     # to do things this way):
+    - versions.yml
     - ssh-public-keys.yml
     - access.yml
 
@@ -30,56 +26,21 @@
     ocp_config_resources: >-
       {{ resources_openshift_clusters[inventory_hostname] }}
 
-- name: ClusterDeployment object
+- name: '`ClusterDeployment`'
   register: _spoke_clusterdeployment
   kubernetes.core.k8s:
-    definition:
-      apiVersion: hive.openshift.io/v1
-      kind: ClusterDeployment
-      metadata:
-        # Just like the non-namespaced ManagedCluster object creates a
-        # namespace with the same name, the Hive operator assumes that
-        # ClusterDeployment objects must have the same name as the
-        # namespace they live in for the “import cluster” feature to
-        # work.
-        name: "{{ spoke_namespace_in_hub }}"
-        namespace: "{{ spoke_namespace_in_hub }}"
-      spec:
-        baseDomain: "{{ cluster_base_domain }}"
-        clusterName: "{{ cluster_name }}"
-        platform:
-          vsphere:
-            # As seen in `oc explain ClusterDeployment.spec.platform.vsphere`
-            cluster:          "{{ _vsphere_placement.cluster }}"
-            datacenter:       "{{ _vsphere_placement.dc }}"
-            defaultDatastore: "{{ _vsphere_placement.datastore }}"
-            folder: >-
-              {{ lookup("template", "vm-folder-full",
-              template_vars=dict(_vm_placement=_vsphere_placement))
-              | trim }}
-            network: "{{ _network_name }}"
-
-            vCenter:  "{{ vsphere_credentials.host }}"
-            # The objects referenced below are created by
-            # ../../roles/openshift4-hub/tasks/hub-spokes-config.yml
-            credentialsSecretRef:
-              name: spoke-vsphere-credentials
-            certificatesSecretRef:
-              name: vcenter-cert-bundle
-        provisioning:
-          imageSetRef:
-            name: "{{ spoke_clusterimageset_name }}"
-          installConfigSecretRef:
-            name: openshift-install-config
-        pullSecretRef:
-          name: spoke-pull-secret
+    definition: >-
+      {{ lookup("template", "clusterdeployment.yml")
+      | from_yaml }}
   vars:
-    _resources: >-
-      {{ resources_openshift_clusters[inventory_hostname] }}
-    _vsphere_placement: >-
-      {{ _resources.vsphere_placement }}
-    _network_name: >-
-      {{ _vsphere_placement.network.name }}
+    _clusterdeployment_specific_spec:
+      provisioning:
+        imageSetRef:
+          name: "{{ spoke_clusterimageset_name }}"
+        installConfigSecretRef:
+          name: openshift-install-config
+      pullSecretRef:
+        name: spoke-pull-secret
 
 - run_once: true
   when: _spoke_clusterdeployment is changed

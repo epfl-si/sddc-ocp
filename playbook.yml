@@ -39,7 +39,7 @@
         ansible_connection: local
         ansible_python_interpreter: "{{ xaasible_python_shim }}"
 
-- name: "openshift4-spoke: spin up managed clusters"
+- name: "openshift4-spoke: managed clusters"
   hosts: openshift_spoke_clusters
   gather_facts: no
   roles:

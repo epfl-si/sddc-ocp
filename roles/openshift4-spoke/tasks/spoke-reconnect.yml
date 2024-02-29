@@ -1,0 +1,46 @@
+# Create ClusterDeployment object and its dependencies to reconnect to
+# an already-installed cluster
+#
+# Caller must set the `spoke_reconnect_info` variable
+
+- tags: always
+  include_vars: "{{ item }}"
+  with_items:
+    - resources.yml
+
+- name: '`Secret/{{ spoke_reconnected_secret_admin_kubeconfig }}`'
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        name: "{{ spoke_reconnected_secret_admin_kubeconfig }}"
+        namespace: "{{ spoke_namespace_in_hub }}"
+      stringData:
+        kubeconfig: >-
+          {{ spoke_reconnect_info.kubeconfig }}
+
+- name: '`Secret/{{ spoke_reconnected_secret_admin_password }}`'
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        name: "{{ spoke_reconnected_secret_admin_password }}"
+        namespace: "{{ spoke_namespace_in_hub }}"
+      stringData: >-
+        {{ spoke_reconnect_info.admin_credentials }}
+
+- name: '`ClusterDeployment`'
+  kubernetes.core.k8s:
+    definition: >-
+      {{ lookup("template", "clusterdeployment.yml")
+      | from_yaml }}
+  vars:
+    _clusterdeployment_specific_spec:
+      installed: true
+      clusterMetadata:
+        adminKubeconfigSecretRef:
+          name: "{{ spoke_reconnected_secret_admin_kubeconfig }}"
+        adminPasswordSecretRef:
+          name: "{{ spoke_reconnected_secret_admin_password }}"
+        clusterID: "{{ spoke_reconnect_info.clusterID }}"
+        infraID: "{{ spoke_reconnect_info.infraID }}"

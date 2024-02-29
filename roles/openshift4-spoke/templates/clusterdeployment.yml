@@ -1,0 +1,36 @@
+{% set _my = resources_openshift_clusters[inventory_hostname] %}
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  # Just like the non-namespaced ManagedCluster object (as seen in
+  # ../tasks/spoke-prep.yml) creates a namespace with the same name,
+  # the Hive operator assumes that ClusterDeployment objects must have
+  # the same name as the namespace they live in.
+  name: "{{ spoke_namespace_in_hub }}"
+  namespace: "{{ spoke_namespace_in_hub }}"
+spec:
+  baseDomain: "{{ cluster_base_domain }}"
+  clusterName: "{{ cluster_name }}"
+  platform:
+    vsphere:
+      # As seen in `oc explain ClusterDeployment.spec.platform.vsphere`
+      cluster:          "{{ _my.vsphere_placement.cluster }}"
+      datacenter:       "{{ _my.vsphere_placement.dc }}"
+      defaultDatastore: "{{ _my.vsphere_placement.datastore }}"
+      folder: {{
+         lookup("template", "vm-folder-full",
+                template_vars=dict(_vm_placement=_my.vsphere_placement))
+         | trim
+}}
+      network: "{{ _my.vsphere_placement.network.name }}"
+
+      vCenter:  "{{ vsphere_credentials.host }}"
+      # The objects referenced below are created by
+      # ../../roles/openshift4-hub/tasks/hub-spokes-config.yml
+      credentialsSecretRef:
+        name: spoke-vsphere-credentials
+      certificatesSecretRef:
+        name: vcenter-cert-bundle
+{% if _clusterdeployment_specific_spec is defined %}
+  {{ _clusterdeployment_specific_spec | to_yaml | indent(2) }}
+{% endif %}

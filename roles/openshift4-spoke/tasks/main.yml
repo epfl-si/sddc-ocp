@@ -14,19 +14,47 @@
     - openshift.spoke
     - openshift.spoke.prep
 
-- name: Install spoke cluster
-  when: inventory_manually_created_cluster_name is not defined
-  include_tasks:
-    file: spoke-install.yml
-    apply:
+- tags: always
+  vars:
+    _clusterdeployment_object_is_missing: >-
+      {{ 0 == (query("kubernetes.core.k8s", kubeconfig=spoke_kubeconfig_of_hub,
+                     kind="ClusterDeployment", namespace=spoke_namespace_in_hub)
+              | length) }}
+  when:
+    - inventory_manually_created_cluster_name is not defined
+    - _clusterdeployment_object_is_missing
+  block:
+    - set_fact:
+        spoke_reconnect_info: >-
+          {{ lookup("existing_cluster_details", cluster_name=inventory_hostname,
+                    kubeconfig=xaasible_kubeconfig)
+          | default(None) }}
+
+    - when: spoke_reconnect_info != None
+      include_tasks:
+        file: spoke-reconnect.yml
+        apply:
+          tags:
+            - openshift
+            - openshift.spoke
+            - openshift.spoke.reconnect
+      tags:
+        - openshift
+        - openshift.spoke
+        - openshift.spoke.reconnect
+
+    - when: spoke_reconnect_info == None
+      include_tasks:
+        file: spoke-install.yml
+        apply:
+          tags:
+            - openshift
+            - openshift.spoke
+            - openshift.spoke.install
       tags:
         - openshift
         - openshift.spoke
         - openshift.spoke.install
-  tags:
-    - openshift
-    - openshift.spoke
-    - openshift.spoke.install
 
 - include_tasks:
     file: spoke-xaasctl.yml
@@ -46,7 +74,7 @@
     - all.xaasctl
 
 - tags: always
-  name: Log in to managed clusters
+  name: Log in to spoke clusters
   changed_when: false  # Eh. It only changes a cache.
   shell:
     cmd: |
