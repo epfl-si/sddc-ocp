@@ -99,6 +99,19 @@ log_in_to_cluster () {
     local fqdn=$1; shift
     cluster_of_fqdn "$fqdn" >/dev/null  # Checks existence
     local cluster="$(cluster_of_fqdn "$fqdn")"
+
+    # Molly-guard against the Ansible configuration-as-code crossing its streams:
+    case "$KUBECONFIG" in
+        ""|*"$fqdn"*)  : ;;
+        */xaasible-state-cache/*) fatal <<MOLLY_GUARD ;;
+
+FATAL: \`xaasctl login-cluster\` is being used to attempt to log into
+$fqdn, while the KUBECONFIG environment
+variable is $KUBECONFIG.
+
+MOLLY_GUARD
+    esac
+
     case "$(eval "cluster_${cluster}_access")" in
         bastion) log_in_to_cluster__bastion "$fqdn" "$@" ;;
         spoke)   log_in_to_cluster__spoke   "$fqdn" "$@" ;;
