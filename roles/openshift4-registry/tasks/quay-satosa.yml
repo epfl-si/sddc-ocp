@@ -13,7 +13,6 @@
         name: satosa
         namespace: "{{ quay_namespace }}"
       data:
-        somthing: changed
         proxy_conf.yaml: |
           {{ lookup("zip", url=satosa_tequila_zip_url, path="proxy_conf.yaml") }}
         custom-entrypoint.sh: |
