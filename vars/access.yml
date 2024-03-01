@@ -26,6 +26,7 @@ _access_fsd:
   - olivier.bieler@epfl.ch
   - giovanni.cangiani@epfl.ch
   - lindo.duratti@epfl.ch
+  - sami.panseri@epfl.ch
 
 _access_everyone: >-
   {{ _access_camptocamp + _access_fsd + _access_sddc }}
