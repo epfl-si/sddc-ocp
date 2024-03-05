@@ -93,6 +93,8 @@
                 - profile
                 - tequila
 
+          FEATURE_USERNAME_CONFIRMATION: false
+
           FEATURE_TEAM_SYNCING: true
           # Because why not?
           FEATURE_NONSUPERUSER_TEAM_SYNCING_SETUP: true
