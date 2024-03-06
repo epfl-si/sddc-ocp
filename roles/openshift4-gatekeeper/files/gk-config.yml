@@ -6,9 +6,9 @@ metadata:
 spec:
   sync:
     syncOnly:
-      - group: ""
-        version: "v1"
-        kind: "PersistentVolume"
+      # - group: ""
+      #   version: "v1"
+      #   kind: "PersistentVolume"
       - group: ""
         version: "v1"
         kind: "PersistentVolumeClaim"

@@ -53,5 +53,5 @@ spec:
           sum_pvc_size > storagelimit
 
           # then deny the request with the message
-          msg := sprintf("Size of all PVCs %v exceeds cluster storage quota %v", [sum_pvc_size, storagelimit])
+          msg := sprintf("Size of all PVCs %v exceeds cluster storage quota %v, [sum_pvc_size, storagelimit])
         }

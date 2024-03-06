@@ -36,6 +36,7 @@ resources_openshift_clusters:
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
     OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
+    quota_sc_size: 200
 
   iam.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.iam }}"
@@ -54,6 +55,7 @@ resources_openshift_clusters:
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
     OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
+    quota_sc_size: 50
 
   camptocamp.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.camptocamp }}"
@@ -91,6 +93,7 @@ resources_openshift_clusters:
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
     OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
+    quota_sc_size: 50
 
 _common_service_ips:
   cidr: 172.30.0.0/16
