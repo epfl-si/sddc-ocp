@@ -15,14 +15,16 @@
     - openshift.spoke.prep
 
 - tags: always
-  vars:
-    _clusterdeployment_object_is_missing: >-
+  set_fact:
+    _clusterdeployment_object_was_missing: >-
       {{ 0 == (query("kubernetes.core.k8s", kubeconfig=spoke_kubeconfig_of_hub,
                      kind="ClusterDeployment", namespace=spoke_namespace_in_hub)
               | length) }}
+
+- tags: always
   when:
     - inventory_manually_created_cluster_name is not defined
-    - _clusterdeployment_object_is_missing
+    - _clusterdeployment_object_was_missing
   block:
     - set_fact:
         spoke_reconnect_info: >-
