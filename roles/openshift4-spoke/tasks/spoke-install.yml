@@ -59,22 +59,3 @@
       and click on the “Creating” hyperlinks to watch logs.
 
       ==========================================================================
-
-
-- name: >-
-    {{ "Wait for the spoke cluster(s) to come up"
-    if _spoke_clusterdeployment is changed
-    else "Check that the spoke cluster(s) are up"
-    }}
-  retries: >-
-    {{ 50
-    if _spoke_clusterdeployment is changed else 1 }}
-  delay: 60
-  register: _oc_get_clusterdeployment_installed
-  until: >-
-    "true" == _oc_get_clusterdeployment_installed.stdout
-  changed_when: false
-  shell:
-    cmd: |
-      oc -n {{ spoke_namespace_in_hub }} get clusterdeployment  {{ spoke_namespace_in_hub }} \
-        -o jsonpath="{.spec.installed}"
