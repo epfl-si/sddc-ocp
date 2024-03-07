@@ -31,6 +31,7 @@
           | default(None) }}
 
     - when: spoke_reconnect_info != None
+      name: "Reconnect to spoke cluster(s)"
       include_tasks:
         file: spoke-reconnect.yml
         apply:
@@ -44,6 +45,7 @@
         - openshift.spoke.reconnect
 
     - when: spoke_reconnect_info == None
+      name: "Install spoke cluster(s)"
       include_tasks:
         file: spoke-install.yml
         apply:
