@@ -32,6 +32,7 @@
     - openshift
     - openshift.config
     - openshift.config.network
+    - openshift.config.network.cilium
 
 - name: Set up template for new namespaces
   include_tasks:
