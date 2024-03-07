@@ -45,3 +45,12 @@ spec:
       enabled: true
     ui:
       enabled: true
+    tls:
+      auto:
+        # The default value (`helm`) runs into a silly
+        # upgrade-to-not-really-change-anything loop:
+        method: certmanager
+        certManagerIssuerRef:
+          group: cert-manager.io
+          kind: ClusterIssuer
+          name: ca-issuer
