@@ -13,3 +13,4 @@ spoke_clusterimageset_version: >-
   else "4.15.8" }}
 quay_channel: stable-3.9
 quay_bridge_channel: stable-3.9
+cilium_version: 1.14.3

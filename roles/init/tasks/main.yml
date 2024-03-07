@@ -2,8 +2,10 @@
 # rest.
 
 - tags: always
-  include_vars:
-    file: software.yml
+  include_vars: '{{ item }}'
+  with_items:
+  - versions.yml
+  - software.yml
 
 - tags: always
   include_tasks:
