@@ -9,8 +9,8 @@
       metadata:
         name: "{{ spoke_namespace_in_hub }}"
         labels:
-          cloud: auto-detect
-          vendor: auto-detect
+          cloud: VSphere
+          vendor: OpenShift
       spec:
         hubAcceptsClient: true
 
