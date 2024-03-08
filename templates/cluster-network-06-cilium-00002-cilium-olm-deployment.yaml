@@ -14,6 +14,10 @@ spec:
          | to_yaml | indent(6) }}
       containers:
         - name: operator
+          command:
+            {{ _vendor.spec.template.spec.containers[0].command
+               | difference("--enable-leader-election")
+               | to_yaml | indent(12) }}
           env:
             - name: KUBERNETES_SERVICE_HOST
               value: "{{ cluster_api_server }}"
@@ -22,5 +26,5 @@ spec:
             {{ _vendor.spec.template.spec.containers[0].env
                | to_yaml | indent(12) }}
           {{ _vendor.spec.template.spec.containers[0]
-             | dict_difference(["name", "env"])
+             | dict_difference(["name", "command", "env"])
              | to_yaml | indent(10) }}
