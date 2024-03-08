@@ -6,9 +6,8 @@ openshift_install_custom_manifests: >-
         lookup("template", "cluster-network-07-cilium-ciliumconfig.yaml",
                            template_vars=dict(networkConfig=_oiam_network_config)),
       "cluster-network-06-cilium-00002-cilium-olm-deployment.yaml":
-        _oiam_isovalent_configs_from_git["cluster-network-06-cilium-00002-cilium-olm-deployment.yaml"]
-          | regex_replace('^( *)(image:)', '\1  __MOAR_ENV_HERE__\n\1\2', multiline=True)
-          | replace("__MOAR_ENV_HERE__",  _oiam_kubernetes_env | indent(12) | trim),
+        lookup("template", "cluster-network-06-cilium-00002-cilium-olm-deployment.yaml",
+                           template_vars=dict(_vendor=_oiam_isovalent_configs_from_git["cluster-network-06-cilium-00002-cilium-olm-deployment.yaml"] | from_yaml))
     })
   }}
 
@@ -36,9 +35,3 @@ _oiam_isovalent_git_dir: >-
 
 _oiam_network_config: >-
   {{ resources_openshift_clusters[inventory_hostname] }}
-
-_oiam_kubernetes_env: |
-  - name: KUBERNETES_SERVICE_HOST
-    value: "{{ cluster_api_server }}"
-  - name: KUBERNETES_SERVICE_PORT
-    value: "6443"

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  {{ _vendor.metadata
+     | to_yaml | indent(2) }}
+spec:
+  {{ _vendor.spec | dict_difference(["template"])
+     | to_yaml | indent(2) }}
+  template:
+    {{ _vendor.spec.template | dict_difference(["spec"])
+       | to_yaml | indent(4) }}
+    spec:
+      {{ _vendor.spec.template.spec | dict_difference(["containers"])
+         | to_yaml | indent(6) }}
+      containers:
+        - name: operator
+          env:
+            - name: KUBERNETES_SERVICE_HOST
+              value: "{{ cluster_api_server }}"
+            - name: KUBERNETES_SERVICE_PORT
+              value: "6443"
+            {{ _vendor.spec.template.spec.containers[0].env
+               | to_yaml | indent(12) }}
+          {{ _vendor.spec.template.spec.containers[0]
+             | dict_difference(["name", "env"])
+             | to_yaml | indent(10) }}
