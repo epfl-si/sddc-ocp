@@ -6,7 +6,7 @@
 from base64 import b64encode
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.epfl_si.actions.plugins.module_utils.postconditions import Postcondition
-from ansible_collections.epfl_si.xaasible.plugins.module_utils.flask import run_flask_postcondition
+from ansible.module_utils.flask import run_flask_postcondition
 
 class QuayTokenDeletedPostcondition(Postcondition):
     def __init__(self, token):
@@ -82,18 +82,19 @@ class QuayTokenTask(object):
 
     def run(self):
         module = AnsibleModule(**self.module_spec)
-        if module.params['state'] == 'present':
+        state = module.params['state']
+        if state == 'present':
             postcondition = QuayTokenCreatedPostcondition(
                 organization=module.params['organization'],
                 user=module.params['user'],
                 oauth_app=module.params['oauth_app'],
                 oauth_scopes=module.params['oauth_scopes'],
                 expires_seconds=module.params['expires_seconds'])
-        elif module.params['state'] == 'absent':
+        elif state == 'absent':
             postcondition = QuayTokenDeletedPostcondition(
                 module.params['token'])
         else:
-            raise AnsibleError('Unknown state: %s' % state)
+            raise ValueError('Unknown state: %s' % state)
 
         result = run_flask_postcondition(postcondition)
         if hasattr(postcondition, "access_token"):

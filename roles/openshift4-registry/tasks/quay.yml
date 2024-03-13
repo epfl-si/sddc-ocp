@@ -181,37 +181,29 @@
     cmd: |
       oc -n {{ quay_namespace}} exec -i {{ quay_pod_names[0] }} -- true
 
-- vars:
-    ansible_connection: oc
-    ansible_oc_pod: "{{ quay_pod_names[0] }}"
-    ansible_oc_container: "quay-app"
-    ansible_remote_tmp: /tmp
-    ansible_python_interpreter: /usr/bin/python3
+- name: 'Delete {{ quay_bridge_service_account }} account in Quay'
+  when: >-
+    "openshift.quay.server.serviceaccount.delete" in ansible_run_tags
+  quay_service_account:
+    name: "{{ quay_bridge_service_account }}"
+    state: absent
 
-  block:
-    - name: 'Delete {{ quay_bridge_service_account }} account in Quay'
-      when: >-
-        "openshift.quay.server.serviceaccount.delete" in ansible_run_tags
-      quay_service_account:
-        name: "{{ quay_bridge_service_account }}"
-        state: absent
+- name: '{{ quay_bridge_service_account }} account in Quay'
+  quay_service_account:
+    name: "{{ quay_bridge_service_account }}"
+    state: present
 
-    - name: '{{ quay_bridge_service_account }} account in Quay'
-      quay_service_account:
-        name: "{{ quay_bridge_service_account }}"
-        state: present
+- name: "Delete {{ quay_bridge_organization_name }} organization"
+  tags:
+    - openshift.quay.server.organization.delete
+  when: >-
+    "openshift.quay.server.organization.delete" in ansible_run_tags
+  quay_organization:
+    name: "{{ quay_bridge_organization_name }}"
+    state: absent
 
-    - name: "Delete {{ quay_bridge_organization_name }} organization"
-      tags:
-        - openshift.quay.server.organization.delete
-      when: >-
-        "openshift.quay.server.organization.delete" in ansible_run_tags
-      quay_organization:
-        name: "{{ quay_bridge_organization_name }}"
-        state: absent
-
-    - name: "{{ quay_bridge_organization_name }} organization"
-      quay_organization:
-        name: "{{ quay_bridge_organization_name }}"
-        email: "{{ quay_bridge_organization_email }}"
-        owner: "{{ quay_bridge_service_account }}"
+- name: "{{ quay_bridge_organization_name }} organization"
+  quay_organization:
+    name: "{{ quay_bridge_organization_name }}"
+    email: "{{ quay_bridge_organization_email }}"
+    owner: "{{ quay_bridge_service_account }}"

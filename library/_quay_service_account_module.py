@@ -5,7 +5,7 @@
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.epfl_si.actions.plugins.module_utils.postconditions import Postcondition
-from ansible_collections.epfl_si.xaasible.plugins.module_utils.flask import run_flask_postcondition
+from ansible.module_utils.flask import run_flask_postcondition
 
 
 class QuayServiceAccountDeletedPostcondition(Postcondition):
@@ -50,14 +50,15 @@ class QuayServiceAccountTask(object):
     def run(self):
         module = AnsibleModule(**self.module_spec)
         name = module.params['name']
-        if module.params['state'] == 'present':
+        state = module.params['state']
+        if state == 'present':
             postcondition = QuayServiceAccountCreatedPostcondition(
                 name=name)
-        elif module.params['state'] == 'absent':
+        elif state == 'absent':
             postcondition = QuayServiceAccountDeletedPostcondition(
                 name=name)
         else:
-            raise AnsibleError('Unknown state: %s' % state)
+            raise ValueError('Unknown state: %s' % state)
 
         module.exit_json(**run_flask_postcondition(postcondition))
 

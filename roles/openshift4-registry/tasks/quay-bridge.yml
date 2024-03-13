@@ -79,32 +79,23 @@
     (_checked.state != "still valid")
     or
     ("openshift.quay.bridge.renew-token" in ansible_run_tags)
+  name: "Renew OAuth token in the Quay instance of {{ quay_bridge_quay_cluster }}"
   block:
-    - name: "Renew OAuth token in the Quay instance of {{ quay_bridge_quay_cluster }}"
-      vars:
-        ansible_connection: oc
-        ansible_oc_kubeconfig: "{{ hostvars[quay_bridge_quay_cluster].xaasible_kubeconfig }}"
-        ansible_oc_namespace: "{{ quay_namespace }}"
-        ansible_oc_pod: "{{ quay_pod_names[0] }}"
-        ansible_oc_container: "quay-app"
-        ansible_remote_tmp: /tmp
-        ansible_python_interpreter: /usr/bin/python3
-      block:
-        - when: >-
-            ("previous_token" in _checked)
-            or
-            ("openshift.quay.bridge.renew-token" in ansible_run_tags)
-          quay_token:
-            state: "absent"
-            token: >-
-              {{ _checked.previous_token }}
-        - quay_token:
-            organization:    "{{ quay_bridge_organization_name }}"
-            user:            "{{ quay_bridge_service_account }}"
-            oauth_app:       "{{ quay_bridge_oauth_app_name }}"
-            oauth_scopes:    "{{ quay_bridge_token_scopes }}"
-            expires_seconds: "{{ quay_bridge_token_expiration_delay_seconds }}"
-          register: _quay_bridge_token
+    - when: >-
+        ("previous_token" in _checked)
+        or
+        ("openshift.quay.bridge.renew-token" in ansible_run_tags)
+      quay_token:
+        state: "absent"
+        token: >-
+          {{ _checked.previous_token }}
+    - quay_token:
+        organization:    "{{ quay_bridge_organization_name }}"
+        user:            "{{ quay_bridge_service_account }}"
+        oauth_app:       "{{ quay_bridge_oauth_app_name }}"
+        oauth_scopes:    "{{ quay_bridge_token_scopes }}"
+        expires_seconds: "{{ quay_bridge_token_expiration_delay_seconds }}"
+      register: _quay_bridge_token
 
     - name: OpenShift Secret containing the new token
       kubernetes.core.k8s:

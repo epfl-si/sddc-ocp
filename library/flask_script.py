@@ -22,35 +22,13 @@ See FlaskScriptTask.module_spec for supported task parameters.
 
 import inspect
 import importlib.util
-import warnings
-from functools import update_wrapper
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible_collections.epfl_si.actions.plugins.module_utils.ansible_api import AnsibleResults
-from ansible_collections.epfl_si.actions.plugins.module_utils.postconditions import Postcondition, run_postcondition
-
-try:
-    from ansible.errors import AnsibleError
-except ImportError:
-    AnsibleError = Exception
+from ansible_collections.epfl_si.actions.plugins.module_utils.postconditions import Postcondition
+from ansible.module_utils.flask import with_flask_appcontext, run_flask_postcondition
 
 deepcopy = __import__('copy').deepcopy
-
-
-def with_flask_appcontext(f):
-    """Runs f without arguments, within the Flask application context.
-
-    Reverse-engineered from flask/cli.py by removing all the click
-    stuff, ignoring Flask load-time warnings.
-    """
-
-    def decorator(*args, **kwargs):
-        from flask.cli import ScriptInfo
-        with warnings.catch_warnings(record=True):  # i.e. ignore them
-            app = ScriptInfo().load_app()
-        with app.app_context():
-            return f(*args, **kwargs)
-    return update_wrapper(decorator, f)
 
 
 class FlaskScriptTask(object):
@@ -70,7 +48,7 @@ class FlaskScriptTask(object):
         postcondition_class = self.module.params.get('postcondition_class')
 
         if (script is None) == (postcondition_class is None):
-            raise TypeError("Exactly one of `script` or `postcondition_class` must be set.")
+            raise ValueError("Exactly one of `script` or `postcondition_class` must be set.")
         elif script is not None:
             if check_mode:
                 return self.module.exit_json(skipped=True, reason="Cannot run `script` in check mode")
@@ -89,7 +67,7 @@ class FlaskScriptTask(object):
                 if self.is_postcondition_subclass(cls):
                     AnsibleResults.update(
                         self.result,   # run_flask_postcondition() may also mutate this
-                        self.run_flask_postcondition(self.construct_postcondition(cls)))
+                        run_flask_postcondition(self.construct_postcondition(cls), check_mode=self.module.check_mode))
                     self.module.exit_json(**self.result)
             self.module.exit_json(failed=True,
                                   reason="Expected the `postcondition_class` code fragment to declare a Postcondition subclass")
@@ -117,10 +95,6 @@ class FlaskScriptTask(object):
             return cls(result=self.result)
         else:
             return cls()
-
-    @with_flask_appcontext
-    def run_flask_postcondition(self, postcondition):
-        return run_postcondition(postcondition, check_mode=self.module.check_mode)
 
     def observability_helpers(self, result_object):
         """Returns some functions that scripts may want to call, so as to signal their progress.
