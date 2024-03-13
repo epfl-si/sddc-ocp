@@ -242,23 +242,3 @@
         name: "{{ quay_bridge_organization_name }}"
         email: "{{ quay_bridge_organization_email }}"
         owner: "{{ quay_bridge_service_account }}"
-
-    - name: "OAuth application for {{ quay_bridge_organization_name }} organization"
-      flask_script:
-        postcondition_class: |
-          from data.database import OAuthApplication, User
-          from data.model.organization import get_organization
-          from data.model.oauth import create_application
-
-          org_name       = "{{ quay_bridge_organization_name }}"
-          oauth_app_name = "{{ quay_bridge_oauth_app_name }}"
-
-          class OAuthApplicationPostcondition(Postcondition):
-            def holds(self):
-              return 1 == len(
-                OAuthApplication.select().join(User)
-                .where(User.username == org_name, OAuthApplication.name == oauth_app_name))
-
-            def enforce(self):
-              org = get_organization(org_name)
-              create_application(org, oauth_app_name, "", "")
