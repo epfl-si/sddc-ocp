@@ -188,45 +188,18 @@
     ansible_remote_tmp: /tmp
     ansible_python_interpreter: /usr/bin/python3
 
-  # 💡 To explore the Flask object model, try
-  #
-  #   oc -n redhat-quay exec -it $(oc -n redhat-quay get pod -o name |grep -e -quay-app- | head -1) -- flask shell
-  #
-  #   import data
-  #   import peewee
-  #   [getattr(data.database, t) for t in dir(data.database)
-  #    if isinstance(getattr(data.database, t), peewee.ModelBase) ]
-  #
-  # Choose one of the `peewee.ModelBase` instances so returned, and then say e.g.
-  #
-  #   list(data.database.OAuthApplication.select())
-  #
   block:
     - name: 'Delete {{ quay_bridge_service_account }} account in Quay'
       when: >-
         "openshift.quay.server.serviceaccount.delete" in ansible_run_tags
-      flask_script:
-        script: |
-          from data.model.user import get_user, delete_user
-          service_account_name = "{{ quay_bridge_service_account }}"
-
-          service_account = get_user(service_account_name)
-          if service_account is not None:
-            delete_user(service_account, [])
-            signal_changed("Deleted service account %s" % service_account_name)
+      quay_service_account:
+        name: "{{ quay_bridge_service_account }}"
+        state: absent
 
     - name: '{{ quay_bridge_service_account }} account in Quay'
-      flask_script:
-        postcondition_class: |
-          from data.model.user import get_user, create_user_noverify
-          class QuayBridgeServiceAccount(Postcondition):
-            username = '{{ quay_bridge_service_account }}'
-
-            def holds(self):
-              return get_user(self.username) is not None
-
-            def enforce(self):
-              create_user_noverify(self.username, None, email_required=False).save()
+      quay_service_account:
+        name: "{{ quay_bridge_service_account }}"
+        state: present
 
     - name: "Delete {{ quay_bridge_organization_name }} organization"
       tags:

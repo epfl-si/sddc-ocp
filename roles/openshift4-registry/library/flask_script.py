@@ -6,6 +6,20 @@
 See FlaskScriptTask.module_spec for supported task parameters.
 """
 
+# 💡 To explore the Flask object model, try
+#
+#   oc -n redhat-quay exec -it $(oc -n redhat-quay get pod -o name |grep -e -quay-app- | head -1) -- flask shell
+#
+#   import data
+#   import peewee
+#   [getattr(data.database, t) for t in dir(data.database)
+#    if isinstance(getattr(data.database, t), peewee.ModelBase) ]
+#
+# Choose one of the `peewee.ModelBase` instances so returned, and then say e.g.
+#
+#   list(data.database.OAuthApplication.select())
+#
+
 import inspect
 import importlib.util
 import warnings
