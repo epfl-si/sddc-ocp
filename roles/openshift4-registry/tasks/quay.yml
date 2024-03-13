@@ -233,43 +233,15 @@
         - openshift.quay.server.organization.delete
       when: >-
         "openshift.quay.server.organization.delete" in ansible_run_tags
-      flask_script:
-        script: |
-          from data.model.user import User, delete_user
-
-          org_name = "{{ quay_bridge_organization_name }}"
-
-          try:
-            if delete_user(User.get(User.username == org_name), []):
-              signal_changed("Deleted organization (user) %s" % org_name)
-            else:
-              raise "Unable to delete organization (user) %s" % org_name
-          except User.DoesNotExist:
-            log("User (organization) %s not found" % org_name)
-            pass
+      quay_organization:
+        name: "{{ quay_bridge_organization_name }}"
+        state: absent
 
     - name: "{{ quay_bridge_organization_name }} organization"
-      flask_script:
-        postcondition_class: |
-          from data.model import InvalidOrganizationException
-          from data.model.user import get_user
-          from data.model.organization import get_organization, create_organization
-
-          org_name             = "{{ quay_bridge_organization_name }}"
-          org_email            = "{{ quay_bridge_organization_email }}"
-          service_account_name = "{{ quay_bridge_service_account }}"
-
-          class QuayOrganization(Postcondition):
-            def holds(self):
-              try:
-                get_organization(org_name)
-                return True
-              except InvalidOrganizationException:
-                return False
-
-            def enforce(self):
-              create_organization(org_name, org_email, get_user(service_account_name))
-              signal_changed("%s organization created" % org_name)
+      quay_organization:
+        name: "{{ quay_bridge_organization_name }}"
+        email: "{{ quay_bridge_organization_email }}"
+        owner: "{{ quay_bridge_service_account }}"
 
     - name: "OAuth application for {{ quay_bridge_organization_name }} organization"
       flask_script:
