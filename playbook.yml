@@ -42,6 +42,10 @@
 - name: "openshift4-spoke: managed clusters"
   hosts: openshift_spoke_clusters
   gather_facts: no
+  pre_tasks:
+    - tags: always   # There is a `tag: always` task down below in the role
+      xaasctl_login_cluster:
+        to_cluster: "{{ inventory_hub_cluster }}"
   roles:
     - role: roles/openshift4-spoke
       # Unless specified otherwise in the role files, we talk to the
@@ -65,6 +69,13 @@
 - name: "openshift4-registry: install and configure the image registry"
   hosts: openshift_clusters
   gather_facts: no
+  pre_tasks:
+    - tags: always
+      when: >-
+        (ansible_run_tags | select("prefix", "openshift.quay") | length > 0)
+        or
+        (ansible_run_tags | length == 0)
+      xaasctl_login_cluster: {}
   roles:
     - role: roles/openshift4-registry
       vars:
@@ -76,6 +87,13 @@
 - name: "openshift4-config: finalize clusters configuration"
   hosts: openshift_clusters
   gather_facts: no
+  pre_tasks:
+    - tags: always
+      when: >-
+        (ansible_run_tags | select("prefix", "openshift.config") | length > 0)
+        or
+        (ansible_run_tags | length == 0)
+      xaasctl_login_cluster: {}
   roles:
     - role: roles/openshift4-config
       vars:

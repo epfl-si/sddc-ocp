@@ -34,15 +34,7 @@
   register: _secret_kubeadmin
 
 # Changing the secret invalidates the current token, which I guess is a good thing.
-- name: Log in to hub cluster again (if necessary)
-  when: _secret_kubeadmin is changed
-  changed_when: false
-  shell:
-    cmd: |
-      env KUBECONFIG={{ xaasible_kubeconfig }} ./xaasctl login-cluster {{ inventory_hostname }}
-  vars:
-    ansible_connection: local
-    ansible_python_interpreter: "{{ ansible_playbook_python }}"
+- xaasctl_login_cluster: {}
 
 - name: "`Role` that grants read-only access to the kubeadmin Secret"
   kubernetes.core.k8s:
