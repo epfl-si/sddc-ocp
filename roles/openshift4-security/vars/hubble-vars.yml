@@ -1,0 +1,8 @@
+hubble_build_on_cluster: mgmt.ocp-test.epfl.ch
+hubble_build_robot_account_shortname: "builder"
+
+hubble_okd_image_name: okd.epfl-hubble-ui
+
+hubble_quay_organization_name: hubble-public
+hubble_quay_service_account_name: si-quay-hubble
+

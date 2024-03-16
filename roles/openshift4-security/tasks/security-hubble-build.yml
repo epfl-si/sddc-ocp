@@ -1,0 +1,27 @@
+- name: Quay service account for the Hubble UI images
+  quay_service_account:
+    name: "{{ hubble_quay_service_account_name }}"
+
+- name: Quay organization for the Hubble UI images
+  quay_organization:
+    name: "{{ hubble_quay_organization_name }}"
+    email: "si-quay-admin@groupes.epfl.ch"
+    owner: "{{ hubble_quay_service_account_name }}"
+
+- name: Robot account to push Hubble images
+  quay_robot_account:
+    organization:    "{{ hubble_quay_organization_name }}"
+    robot_shortname:  "{{ hubble_build_robot_account_shortname }}"
+
+- name: Quay repository to host home-built Hubble image
+  quay_repository:
+    organization: "{{ hubble_quay_organization_name }}"
+    name: "{{ hubble_okd_image_name }}"
+    owner: "{{ hubble_quay_service_account_name }}"
+    visibility: public
+    permissions:
+      - state: present
+        role: write
+        subject:
+          robot_account:
+            shortname: "{{ hubble_build_robot_account_shortname }}"

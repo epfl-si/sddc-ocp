@@ -1,3 +1,6 @@
+- tags: always
+  include_vars: hubble-vars.yml
+
 - name: Set up Cilium for network observability
   include_tasks:
     file: security-cilium.yml
@@ -23,3 +26,20 @@
     - openshift
     - openshift.security
     - openshift.security.namespaces
+
+- when: >-
+    inventory_hostname == hubble_build_on_cluster
+  name: Build custom Hubble image
+  include_tasks:
+    file: security-hubble-build.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.security
+        - openshift.security.hubble
+        - openshift.security.hubble.build
+  tags:
+    - openshift
+    - openshift.security
+    - openshift.security.hubble
+    - openshift.security.hubble.build
