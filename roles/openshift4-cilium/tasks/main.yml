@@ -1,5 +1,8 @@
 - tags: always
-  include_vars: resources.yml
+  include_vars: "{{ item }}"
+  with_items:
+    - resources.yml
+    - cilium-vars.yml
 
 - name: Rebuild CiliumConfig object
   # Note: this object will necessarily already exist, as it is created
@@ -7,7 +10,24 @@
   # post-install in some circumstances, though.
   tags:
     - openshift.cilium
+    - openshift.cilium.config
   kubernetes.core.k8s:
     definition: >-
       {{ lookup("template", "cluster-network-07-cilium-ciliumconfig.yaml",
                            template_vars=dict(networkConfig=resources_openshift_clusters[inventory_hostname])) }}
+
+- when: >-
+    inventory_hostname == cilium_hubble_ui_build_on_cluster
+  include_tasks:
+    file: cilium-hubble-ui-build.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.cilium
+        - openshift.cilium.hubble
+        - openshift.cilium.hubble.build
+  tags:
+    - openshift
+    - openshift.cilium
+    - openshift.cilium.hubble
+    - openshift.cilium.hubble.build
