@@ -1,0 +1,7 @@
+cilium_hubble_ui_build_on_cluster: mgmt.ocp-test.epfl.ch
+cilium_hubble_ui_build_robot_account_shortname: "builder"
+
+cilium_hubble_ui_build_image_name: okd.epfl-hubble-ui
+
+cilium_quay_organization_name: cilium-public
+cilium_quay_service_account_name: si-quay-cilium

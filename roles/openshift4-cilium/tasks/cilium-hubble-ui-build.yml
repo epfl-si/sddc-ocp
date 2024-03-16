@@ -1,0 +1,30 @@
+- name: Quay service account for the Hubble UI images
+  quay_service_account:
+    name: "{{ cilium_quay_service_account_name }}"
+
+- name: Quay organization for the Hubble UI images
+  quay_organization:
+    name: "{{ cilium_quay_organization_name }}"
+    email: "si-quay-admin@groupes.epfl.ch"
+    owner: "{{ cilium_quay_service_account_name }}"
+
+- name: Robot account to push Cilium images
+  quay_robot_account:
+    organization:    "{{ cilium_quay_organization_name }}"
+    robot_shortname:  "{{ cilium_hubble_ui_build_robot_account_shortname }}"
+  register: _cilium_quay_build_token
+
+- name: Quay repositories to host Cilium images
+  quay_repository:
+    organization: "{{ cilium_quay_organization_name }}"
+    name: "{{ item }}"
+    owner: "{{ cilium_quay_service_account_name }}"
+    visibility: public
+    permissions:
+      - state: present
+        role: write
+        subject:
+          robot_account:
+            shortname: "{{ cilium_hubble_ui_build_robot_account_shortname }}"
+  with_items:
+    - "{{ cilium_hubble_ui_build_image_name }}"
