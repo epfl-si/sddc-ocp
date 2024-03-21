@@ -1,5 +1,6 @@
+# quay_hostname lives in ../../../vars/openshift-vars.yml
+
 quay_namespace: redhat-quay
-quay_hostname: si-quay.epfl.ch
 quay_bridge_organization_name: epfl_si
 quay_bridge_organization_email: noreply@epfl.ch
 quay_bridge_oauth_app_name: quay-bridge

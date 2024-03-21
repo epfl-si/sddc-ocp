@@ -19,3 +19,5 @@ spoke_clusterimageset_name: >-
   img{{ spoke_clusterimageset_version }}-x86-64-appsub
 
 cluster_api_server: "api.{{ inventory_hostname }}"
+
+quay_hostname: si-quay.epfl.ch
