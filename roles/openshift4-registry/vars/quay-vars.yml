@@ -1,5 +1,6 @@
+# quay_hostname lives in ../../../vars/openshift-vars.yml
+
 quay_namespace: redhat-quay
-quay_hostname: si-quay.epfl.ch
 quay_pod_names: >-
   {{ lookup("pipe",
   "env KUBECONFIG={{ ansible_oc_kubeconfig }} oc -n {{ ansible_oc_namespace }}
