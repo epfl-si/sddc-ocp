@@ -42,6 +42,8 @@
           namespace: openshift-operators
           name: "{{ quay_bridge_secret_name }}"
         quayHostname: "https://{{ quay_hostname }}"
+        denylistNamespaces:
+          - cilium   # We manually configure Quay objects there
 
 ##################################################################################
 
