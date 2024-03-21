@@ -1,3 +1,6 @@
+- tags: always
+  include_vars: versions.yml
+
 - name: Quay service account for the Hubble UI images
   quay_service_account:
     name: "{{ cilium_quay_service_account_name }}"
@@ -14,6 +17,26 @@
     robot_shortname:  "{{ cilium_hubble_ui_build_robot_account_shortname }}"
   register: _cilium_quay_build_token
 
+- name: Secret that contains the robot account's token
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        namespace: '{{ cilium_hubble_ui_build_namespace }}'
+        name: "{{ cilium_hubble_ui_build_push_secret_name }}"
+      type: kubernetes.io/dockerconfigjson
+      stringData:
+        .dockerconfigjson: "{{ _docker_auths_yaml | from_yaml | to_json }}"
+  vars:
+    _docker_auths_yaml: |
+      auths:
+        {{ quay_hostname }}:
+          auth: "{{ _loginpassword | b64encode }}"
+          email: ""
+    _loginpassword: "{{ _login }}:{{ _token }}"
+    _login: "{{ cilium_hubble_ui_build_robot_account }}"
+    _token: "{{ _cilium_quay_build_token.token }}"
+
 - name: Quay repositories to host Cilium images
   quay_repository:
     organization: "{{ cilium_quay_organization_name }}"
@@ -28,3 +51,39 @@
             shortname: "{{ cilium_hubble_ui_build_robot_account_shortname }}"
   with_items:
     - "{{ cilium_hubble_ui_build_image_name }}"
+
+- name: "BuildConfig/{{ cilium_hubble_ui_build_image_name }}"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      metadata:
+        name: "{{ cilium_hubble_ui_build_image_name }}"
+        namespace: "{{ cilium_hubble_ui_build_namespace }}"
+      spec:
+        strategy:
+          type: Docker
+        source:
+          type: Git
+          git:
+            uri: "{{ cilium_hubble_ui_build_git_repository }}"
+            ref: "refs/tags/v{{ cilium_hubble_ui_epfl_version }}"
+        output:
+          to:
+            kind: DockerImage
+            name: "{{ cilium_hubble_ui_build_qualified_image }}"
+          pushSecret:
+            name: "{{ cilium_hubble_ui_build_push_secret_name }}"
+  register: _cilium_hubble_ui_buildconfig
+
+- name: "Rebuild {{ cilium_hubble_ui_build_image_name }} now"
+  when: >-
+    ((_cilium_hubble_ui_buildconfig | default({})) is changed)
+    or
+    ("openshift.cilium.hubble.rebuild" in ansible_run_tags)
+  delegate_to: localhost
+  shell:
+    cmd: >-
+      oc --kubeconfig {{ xaasible_kubeconfig }}
+      -n {{ cilium_hubble_ui_build_namespace }}
+      start-build --wait {{ cilium_hubble_ui_build_image_name }}

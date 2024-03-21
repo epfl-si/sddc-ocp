@@ -1,7 +1,19 @@
-cilium_hubble_ui_build_on_cluster: mgmt.ocp-test.epfl.ch
-cilium_hubble_ui_build_robot_account_shortname: "builder"
+cilium_namespace: cilium
 
-cilium_hubble_ui_build_image_name: okd.epfl-hubble-ui
+cilium_hubble_ui_build_on_cluster: mgmt.ocp-test.epfl.ch
+cilium_hubble_ui_build_git_repository: https://github.com/epfl-si/cluster.okd.hubble-ui
+cilium_hubble_ui_build_namespace: "{{ cilium_namespace }}"
+cilium_hubble_ui_build_service_account: cilium-public
 
 cilium_quay_organization_name: cilium-public
+cilium_hubble_ui_build_robot_account_shortname: "builder"
+cilium_hubble_ui_build_robot_account: "{{ cilium_quay_organization_name }}+{{ cilium_hubble_ui_build_robot_account_shortname }}"
+
+cilium_hubble_ui_build_image_name: okd.epfl-hubble-ui
+# cilium_hubble_ui_epfl_version comes from ../../../vars/versions.yml
+cilium_hubble_ui_build_qualified_image: >-
+  {{ quay_hostname }}/{{ cilium_quay_organization_name }}/{{ cilium_hubble_ui_build_image_name }}:{{ cilium_hubble_ui_epfl_version }}
+cilium_hubble_ui_build_push_secret_name: >-
+  {{ cilium_hubble_ui_build_service_account }}-push
+
 cilium_quay_service_account_name: si-quay-cilium
