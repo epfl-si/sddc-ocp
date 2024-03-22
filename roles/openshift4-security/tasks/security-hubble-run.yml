@@ -1,0 +1,31 @@
+- tags: always
+  include_vars: '{{ item }}'
+  with_items:
+  - versions.yml
+  - access.yml
+
+- name: OpenShift console plug-in and customized Hubble UI (Helm chart)
+  kubernetes.core.helm:
+    name: "{{ hubble_okd_helm_chart_name }}"
+    namespace: "{{ hubble_namespace }}"
+    create_namespace: true
+    # During development of the helm chart, you can override this variable to
+    # install from the cloned Helm chart on your developer's workstation;
+    # e.g.
+    #
+    #   xaasible -l fsd.ocp-test.epfl.ch -t openshift.security.hubble.run \
+    #      -e hubble_okd_helm_chart_ref=/some/where/okd.hubble-ui/charts/okd-epfl-hubble-ui
+    chart_ref: "{{ hubble_okd_helm_chart_ref }}"
+    values:
+      plugin:
+        image: "{{ hubble_okd_qualified_image }}"
+        ## Uncomment the next line if you are pulling off some tagging
+        ## shenanigans (such as rebuilding the same tag over and over
+        ## again, without bumping its number):
+        # imagePullPolicy: Always
+      hubbleUI:
+        image: "{{ hubble_ui_qualified_image }}"
+        imagePullPolicy: Always    # TODO: use a tagged image (not `:latest`)
+        hostname: "{{ hubble_ui_route_hostname }}"
+      hubbleAPI:
+        accessList: "{{ access_list_to_hubble_ui }}"

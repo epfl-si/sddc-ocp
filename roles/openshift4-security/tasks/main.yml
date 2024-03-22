@@ -45,3 +45,18 @@
     - openshift.security.hubble
     - openshift.security.hubble.build
     - openshift.security.hubble.rebuild
+
+- name: Run Hubble as part of the OpenShift console
+  include_tasks:
+    file: security-hubble-run.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.security
+        - openshift.security.hubble
+        - openshift.security.hubble.run
+  tags:
+    - openshift
+    - openshift.security
+    - openshift.security.hubble
+    - openshift.security.hubble.run

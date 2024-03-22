@@ -30,3 +30,9 @@ _access_fsd:
 
 _access_everyone: >-
   {{ _access_camptocamp + _access_fsd + _access_sddc }}
+
+access_list_to_hubble_ui:
+  # XXX: this ought to be a group, DUH
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: quatrava

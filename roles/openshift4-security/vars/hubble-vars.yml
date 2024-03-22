@@ -1,5 +1,4 @@
 hubble_build_on_cluster: mgmt.ocp-test.epfl.ch
-# hubble_build_namespace comes from ../../../vars/openshift-vars.yml
 hubble_build_service_account: hubble-public
 hubble_build_robot_account_shortname: "builder"
 hubble_build_robot_account: "{{ hubble_quay_organization_name }}+{{ hubble_build_robot_account_shortname }}"
@@ -15,3 +14,29 @@ hubble_okd_git_repository: https://github.com/epfl-si/cluster.okd.hubble-ui
 
 hubble_ui_image_name: hubble-ui-epfl
 hubble_ui_git_repository: https://github.com/epfl-si/hubble-ui-epfl
+
+# hubble_build_namespace comes from ../../../vars/openshift-vars.yml
+hubble_namespace: "{{ hubble_build_namespace }}"
+
+hubble_okd_helm_chart_name: okd-epfl-hubble-ui
+_hubble_okd_helm_chart_version: "{{ hubble_okd_epfl_version }}"
+## Comment the line above, and uncomment the line below to fiddle with
+## the Helm version. This is intended for debugging the Helm chart —
+## When things are running normally, you want to release the chart and
+## build the image (`-t openshift.cilium.hubble.rebuild`) in lockstep
+## instead:
+# _hubble_okd_helm_chart_version: 0.1.1
+hubble_okd_helm_chart_ref: "{{ hubble_okd_git_repository }}/releases/download/{{ hubble_okd_helm_chart_name }}-{{ _hubble_okd_helm_chart_version }}/{{ hubble_okd_helm_chart_name }}-{{ _hubble_okd_helm_chart_version }}.tgz"
+hubble_okd_qualified_image: >-
+  {{ lookup("template", "hubble_build_qualified_image_name",
+            template_vars=dict(_image_name=hubble_okd_image_name,
+                               _image_tag=hubble_okd_epfl_version))
+     | trim }}
+
+hubble_ui_qualified_image: >-
+  {{ lookup("template", "hubble_build_qualified_image_name",
+            template_vars=dict(_image_name=hubble_ui_image_name,
+                               _image_tag=hubble_ui_epfl_version))
+     | trim }}
+
+hubble_ui_route_hostname: "hubble-ui.apps.{{ inventory_hostname }}"
