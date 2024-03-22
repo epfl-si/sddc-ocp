@@ -1,4 +1,5 @@
 cilium_namespace: cilium
+cilium_hubble_ui_namespace: "{{ cilium_namespace }}"
 
 cilium_hubble_ui_build_on_cluster: mgmt.ocp-test.epfl.ch
 cilium_hubble_ui_build_git_repository: https://github.com/epfl-si/cluster.okd.hubble-ui
@@ -17,3 +18,16 @@ cilium_hubble_ui_build_push_secret_name: >-
   {{ cilium_hubble_ui_build_service_account }}-push
 
 cilium_quay_service_account_name: si-quay-cilium
+
+cilium_hubble_ui_epfl_helm_chart_name: okd-epfl-hubble-ui
+
+_cilium_hubble_ui_epfl_helm_chart_version: "{{ cilium_hubble_ui_epfl_version }}"
+## Comment the line above, and uncomment the line below to fiddle with
+## the Helm version. This is intended for debugging the Helm chart —
+## When things are running normally, you want to release the chart and
+## build the image (`-t openshift.cilium.hubble.rebuild`) in lockstep
+## instead:
+# _cilium_hubble_ui_epfl_helm_chart_version: 0.1.1
+
+cilium_hubble_ui_epfl_helm_chart_url: "{{ cilium_hubble_ui_build_git_repository }}/releases/download/{{ cilium_hubble_ui_epfl_helm_chart_name }}-{{ _cilium_hubble_ui_epfl_helm_chart_version }}/{{ cilium_hubble_ui_epfl_helm_chart_name }}-{{ _cilium_hubble_ui_epfl_helm_chart_version }}.tgz"
+cilium_hubble_ui_route_hostname: "cilium-hubble-ui.apps.{{ inventory_hostname }}"

@@ -1,0 +1,21 @@
+- tags: always
+  include_vars: '{{ item }}'
+  with_items:
+  - versions.yml
+  - access.yml
+
+- name: OpenShift console plug-in for Hubble UI
+  kubernetes.core.helm:
+    name: "{{ cilium_hubble_ui_epfl_helm_chart_name }}"
+    namespace: "{{ cilium_hubble_ui_namespace }}"
+    chart_ref: "{{ cilium_hubble_ui_epfl_helm_chart_url }}"
+    values:
+      plugin:
+        image: "{{ cilium_hubble_ui_build_qualified_image }}"
+        ## Uncomment the next line if you are pulling off some tagging
+        ## shenanigans (such as rebuilding the same tag over and over
+        ## again, without bumping its number):
+        # imagePullPolicy: Always
+      hubbleAPI:
+        accessList: "{{ access_list_to_cilium_hubble_ui }}"
+        hostname: "{{ cilium_hubble_ui_route_hostname }}"

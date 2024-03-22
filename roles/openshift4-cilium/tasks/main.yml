@@ -33,3 +33,17 @@
     - openshift.cilium.hubble
     - openshift.cilium.hubble.build
     - openshift.cilium.hubble.rebuild
+
+- include_tasks:
+    file: cilium-hubble-ui-run.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.cilium
+        - openshift.cilium.hubble
+        - openshift.cilium.hubble.run
+  tags:
+    - openshift
+    - openshift.cilium
+    - openshift.cilium.hubble
+    - openshift.cilium.hubble.run
