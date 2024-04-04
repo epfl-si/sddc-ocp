@@ -92,6 +92,7 @@
                 - email
                 - profile
                 - tequila
+              LOGIN_BINDING_FIELD: username
 
           FEATURE_USERNAME_CONFIRMATION: false
 
