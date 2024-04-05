@@ -7,19 +7,31 @@ from ansible.plugins.lookup import LookupBase
 from jinja2.runtime import Undefined
 
 class OCError(Exception):
-    def __init__(self, e):
-        super(OCError, self).__init__("%s stderr: %s" % (e, e.stderr))
-        self.stderr = e.stderr
+    def __new__ (cls, subprocess_error):
+        if re.search(r'\bUnauthorized\b', subprocess_error.stderr):
+            return super().__new__(OCUnauthorizedError)
+        elif re.search(r'\bClient.Timeout exceeded\b', subprocess_error.stderr):
+            return super().__new__(OCTimeoutError)
+        else:
+            return super().__new__(OCError)
+
+    def __init__(self, subprocess_error):
+        self.stderr = subprocess_error.stderr
+        super(OCError, self).__init__("%s stderr: %s" % (subprocess_error, self.stderr))
 
     @property
-    def unauthorized_message(self):
+    def first_error_line(self):
         stderr_lines = self.stderr.splitlines()
-        if len(stderr_lines) == 0:
-            return None
-        if re.search(r'\bUnauthorized\b', stderr_lines[0]):
-            return stderr_lines[0]
-        else:
-            return None
+        return stderr_lines[0] if stderr_lines else None
+
+
+class OCUnauthorizedError(OCError):
+    pass
+
+
+class OCTimeoutError(OCError):
+    pass
+
 
 class LookupModule(LookupBase):
     """
@@ -84,18 +96,16 @@ class LookupModule(LookupBase):
                 "password": b64decode(self._oc_stdout("get", "-n", "kube-system", "secret/kubeadmin",
                                                           "-o", "jsonpath={.data.kubeadmin-cleartext}"))
             }
-        except OCError as e:
-            unauthorized = e.unauthorized_message
-            if unauthorized:
-                return [Undefined(unauthorized)]
-            else:
-                raise e
+        except OCUnauthorizedError as e:
+            return [Undefined(e.first_error_line)]
+        except OCTimeoutError as e:
+            return [Undefined(e.first_error_line)]
 
         return [returned]
 
     def _oc_stdout (self, *args):
         try:
-            return subprocess.run(["oc"] + list(args), capture_output=True, check=True,
+            return subprocess.run(["oc", "--request-timeout=5s"] + list(args), capture_output=True, check=True,
                                   env=self._oc_env,
                                   encoding="ascii").stdout
         except subprocess.CalledProcessError as e:
