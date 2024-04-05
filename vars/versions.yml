@@ -1,4 +1,11 @@
 rhacm_channel: release-2.8
+# The version of OpenShift to install on spokes.
+# ⚠ The RHACM operator will auto-download patchlevel releases *only*
+# (i.e. those that differ by the last digit.) If you want to bump the
+# minor version (e.g. from 4.14 to 4.15), then after editing
+# `spoke_clusterimageset_version` below, you need to run
+#
+#     xaasible -t openshift.hub
 spoke_clusterimageset_version: 4.15.5
 quay_channel: stable-3.9
 quay_bridge_channel: stable-3.9
