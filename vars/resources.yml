@@ -147,7 +147,7 @@ _vsphere_networks:
       #  cidr: 10.98.26.0/24
       #  gateway: 10.98.26.1
     fsd:
-      name: S-VLAN-OCP-QA-VNI12020
+      name: S-VLAN-OCP-Test-VNI12020
       # ipv4:
       #  cidr: 10.98.64.0/24
       #  gateway: 10.98.64.1
