@@ -1,4 +1,4 @@
 rhacm_channel: release-2.8
-spoke_clusterimageset_version: 4.13.32
+spoke_clusterimageset_version: 4.15.5
 quay_channel: stable-3.9
 quay_bridge_channel: stable-3.9
