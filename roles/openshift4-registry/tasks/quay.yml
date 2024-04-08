@@ -144,14 +144,6 @@
             managed: true
             overrides: >-
               {{ _debuglog_overrides if (quay_debug | default(False)) else {} }}
-          - kind: postgres
-            managed: true
-            overrides:
-              volumeSize: 10G
-          - kind: clair
-            managed: true
-            overrides:
-              volumeSize: 10G
       # The default configuration sets all other `spec.components` to
       # `managed: true`, except for the object storage; which is
       # exactly what we want.
