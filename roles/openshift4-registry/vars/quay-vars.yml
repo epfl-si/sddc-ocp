@@ -1,13 +1,5 @@
 quay_namespace: redhat-quay
 quay_hostname: si-quay.epfl.ch
-quay_pod_names: >-
-  {{ lookup("pipe",
-  "env KUBECONFIG={{ ansible_oc_kubeconfig }} oc -n {{ ansible_oc_namespace }}
-  get pod -o name
-  | sed 's|^pod/||'
-  | grep quay-app | grep -v quay-app-upgrade
-  ").split()
-  }}
 quay_bridge_organization_name: epfl_si
 quay_bridge_organization_email: noreply@epfl.ch
 quay_bridge_oauth_app_name: quay-bridge
