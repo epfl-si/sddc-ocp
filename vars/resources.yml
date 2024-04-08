@@ -132,6 +132,12 @@ _vsphere_placements:
 _vsphere_networks:
   test:
     mgmt:
+    # 💡 The number after _wrkl_ indicates the VLAN ID that the IP
+    # packets will be routed (VLAN-tagged using the standard 802.1q
+    # encapsulation; currently, the Dell switches do that). Thereafter,
+    # VMware manages the broadcast domain as it pleases (and there may
+    # be multiple _vsphere_networks that are part of the same
+    # broadcast domain at the same time):
       name: clstr-test-OCP-01_wrkl_29-ocp-mgmt
       # ipv4:
       #  cidr: 10.98.24.0/24
