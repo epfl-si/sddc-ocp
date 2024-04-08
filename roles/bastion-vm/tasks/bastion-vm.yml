@@ -42,6 +42,7 @@
     inject_ovf_env: true  # Otherwise “properties” below has no effect; ask
                           # me how I know
     properties:
+      hostname: '{{ inventory_hostname }}'
       public-keys: |
         {% for authorized in ssh_acls[inventory_hostname] %}
         {%   for key in ssh_public_keys_people[authorized] | coerce_list %}
