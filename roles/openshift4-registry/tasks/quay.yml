@@ -40,14 +40,6 @@
   shell:
       cmd: oc get QuayRegistry
 
-- name: "namespace/{{ quay_namespace }}"
-  kubernetes.core.k8s:
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: "{{ quay_namespace }}"
-
 - name: Quay configuration (YAML)
   # Note: changes here take a few minutes to propagate, because the
   # `si-registry-quay-app-XXXX-YYYY` pods don't use this Secret

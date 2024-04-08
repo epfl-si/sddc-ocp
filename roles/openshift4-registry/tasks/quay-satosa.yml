@@ -4,6 +4,14 @@
     - satosa-vars.yml
     - quay-vars.yml
 
+- name: "namespace/{{ quay_namespace }}"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ quay_namespace }}"
+
 - name: SATOSA ConfigMap
   kubernetes.core.k8s:
     definition:
