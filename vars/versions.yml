@@ -1,4 +1,4 @@
-rhacm_channel: release-2.8
+rhacm_channel: release-2.10
 # The version of OpenShift to install on spokes.
 # ⚠ The RHACM operator will auto-download patchlevel releases *only*
 # (i.e. those that differ by the last digit.) If you want to bump the
