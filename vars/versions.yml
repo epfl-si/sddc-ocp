@@ -6,6 +6,10 @@ rhacm_channel: release-2.10
 # `spoke_clusterimageset_version` below, you need to run
 #
 #     xaasible -t openshift.hub
-spoke_clusterimageset_version: 4.15.5
+#
+# 💡 Re: 4.14.5 and Camptocamp, see https://jira.camptocamp.com/servicedesk/customer/portal/5/INF-11778
+spoke_clusterimageset_version: >-
+  {{ "4.14.20" if inventory_hostname == "camptocamp.ocp-test.epfl.ch"
+  else "4.15.8" }}
 quay_channel: stable-3.9
 quay_bridge_channel: stable-3.9
