@@ -38,7 +38,7 @@
   when: >-
     ("all.lockdown" in ansible_run_tags)
     or
-    ("openshift.config.auth.lockdown" in ansible_run_tags)
+    ("openshift.access.lockdown" in ansible_run_tags)
   kubernetes.core.k8s:
     state: absent
     kind: Secret

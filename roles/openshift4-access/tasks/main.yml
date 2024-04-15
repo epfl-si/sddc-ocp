@@ -1,0 +1,15 @@
+# Configuration that applies to all clusters, regardless of
+# how they popped up.
+
+- name: Set up LDAP authentication
+  include_tasks:
+    file: access-auth.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.access
+  tags:
+    - openshift
+    - openshift.access
+    - openshift.access.lockdown
+    - all.lockdown

@@ -10,3 +10,8 @@
           type: OVNKubernetes
           ovnKubernetesConfig:
             v4InternalSubnet: 172.31.0.0/16
+
+- name: `cilium` Helm repository
+  kubernetes.core.helm_repository:
+    name: cilium
+    repo_url: https://helm.cilium.io/

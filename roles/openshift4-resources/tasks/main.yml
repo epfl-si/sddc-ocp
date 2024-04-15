@@ -1,0 +1,12 @@
+- name: Scale clusters (if desired size changed since installation)
+  include_tasks:
+    file: resources-clusters.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.resources
+        - openshift.resources.clusters
+  tags:
+    - openshift
+    - openshift.resources
+    - openshift.resources.clusters
