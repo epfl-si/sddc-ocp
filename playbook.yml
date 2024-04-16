@@ -84,6 +84,26 @@
       environment:
         KUBECONFIG: "{{ xaasible_kubeconfig }}"
 
+- name: "openshift4-cilium: Cilium configuration"
+  # Note that part of that role already played out at cluster install
+  # time, otherwise Cilium would not work at all.
+  hosts: openshift_clusters
+  gather_facts: no
+  pre_tasks:
+    - tags: always
+      when: >-
+        (ansible_run_tags | select("prefix", "openshift.cilium") | length > 0)
+        or
+        (ansible_run_tags | length == 0)
+      xaasctl_login_cluster: {}
+  roles:
+    - role: roles/openshift4-cilium
+      vars:
+        ansible_connection: local
+        ansible_python_interpreter: "{{ xaasible_python_shim }}"
+      environment:
+        KUBECONFIG: "{{ xaasible_kubeconfig }}"
+
 - name: "openshift4-access: control access by people"
   hosts: openshift_clusters
   gather_facts: no

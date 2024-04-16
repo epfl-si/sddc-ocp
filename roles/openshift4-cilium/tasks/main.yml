@@ -1,0 +1,13 @@
+- tags: always
+  include_vars: resources.yml
+
+- name: Rebuild CiliumConfig object
+  # Note: this object will necessarily already exist, as it is created
+  # as part of the cluster install. We may want to change it
+  # post-install in some circumstances, though.
+  tags:
+    - openshift.cilium
+  kubernetes.core.k8s:
+    definition: >-
+      {{ lookup("template", "cluster-network-07-cilium-ciliumconfig.yaml",
+                           template_vars=dict(networkConfig=resources_openshift_clusters[inventory_hostname])) }}
