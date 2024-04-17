@@ -37,6 +37,7 @@ ensure_ansible () {
 
     . "$(ansible_suitcase_dir)"/lib.sh
     ensure_ansible_runtime
+    ensure_confined_helm
 }
 
 ensure_oc () {
