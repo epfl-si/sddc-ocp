@@ -1,3 +1,16 @@
+- name: Set up Cilium for network observability
+  include_tasks:
+    file: security-cilium.yml
+    apply:
+      tags:
+        - openshift
+        - openshift.security
+        - openshift.security.cilium
+  tags:
+    - openshift
+    - openshift.security
+    - openshift.security.cilium
+
 - name: Set up template for new namespaces
   include_tasks:
     file: security-namespaces.yml

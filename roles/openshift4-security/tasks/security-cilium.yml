@@ -1,0 +1,44 @@
+- tags: always
+  include_vars: "{{ item }}"
+  with_items:
+  - versions.yml
+  - cilium-vars.yml
+
+- name: "`cilium` Helm repository"
+  delegate_to: localhost
+  kubernetes.core.helm_repository:
+    name: cilium
+    repo_url: https://helm.cilium.io/
+
+- name: "`{{ cilium_namespace }}` privileged namespace"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ cilium_namespace }}"
+        labels:
+          openshift.io/run-level: "0"
+
+- name: "`cilium` Helm chart"
+  kubernetes.core.helm:
+    name: cilium
+    chart_ref: cilium/cilium
+    chart_version: "{{ cilium_version }}"
+    release_namespace: "{{ cilium_namespace }}"
+    values:
+      debug:
+        enabled: true
+      cni:
+        chainingMode: generic-veth
+        chainingTarget: multus-cni-network
+        binPath: /var/lib/cni/bin
+        confPath: /etc/kubernetes/cni/net.d
+      routingMode: native
+      enableIPv4Masquerade: false
+      enableIPv6Masquerade: false
+      hubble:
+        enabled: true
+        relay:
+          enabled: true
+
