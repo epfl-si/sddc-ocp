@@ -36,7 +36,6 @@ resources_openshift_clusters:
       cidr: 192.168.0.0/16
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
-    OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
 
   iam.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.iam }}"
@@ -54,7 +53,6 @@ resources_openshift_clusters:
       cidr: 192.168.0.0/16
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
-    OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
 
   camptocamp.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.camptocamp }}"
@@ -72,7 +70,6 @@ resources_openshift_clusters:
       cidr: 192.168.0.0/16
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
-    OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
 
   fsd.ocp-test.epfl.ch:
     vsphere_placement: "{{ _vsphere_placements.test.fsd }}"
@@ -90,13 +87,9 @@ resources_openshift_clusters:
       cidr: 192.168.0.0/16
       hostPrefix: 23
     serviceIPs: "{{ _common_service_ips }}"
-    OVNInternalSubnet: "{{ _common_internal_ovn_subnet }}"
 
 _common_service_ips:
   cidr: 172.30.0.0/16
-
-_common_internal_ovn_subnet:
-  cidr: 172.31.0.0/16
 
 _vsphere_placements:
   test:

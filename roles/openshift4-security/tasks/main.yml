@@ -1,16 +1,3 @@
-- name: Set up in-cluster networking
-  include_tasks:
-    file: security-network.yml
-    apply:
-      tags:
-        - openshift
-        - openshift.security
-        - openshift.security.network
-  tags:
-    - openshift
-    - openshift.security
-    - openshift.security.network
-
 - name: Set up template for new namespaces
   include_tasks:
     file: security-namespaces.yml
