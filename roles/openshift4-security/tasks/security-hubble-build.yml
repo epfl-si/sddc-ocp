@@ -12,6 +12,44 @@
   quay_robot_account:
     organization:    "{{ hubble_quay_organization_name }}"
     robot_shortname:  "{{ hubble_build_robot_account_shortname }}"
+  register: _hubble_quay_build_token
+
+- name: "`{{ hubble_build_namespace }}` namespace"
+  kubernetes.core.k8s:
+    definition:
+      kind: Namespace
+      metadata:
+        name: "{{ hubble_build_namespace }}"
+
+- name: Secret that contains the robot account's token
+  kubernetes.core.k8s:
+    definition:
+      kind: Secret
+      metadata:
+        namespace: '{{ hubble_build_namespace }}'
+        name: "{{ hubble_build_push_secret_name }}"
+      type: kubernetes.io/dockerconfigjson
+      stringData:
+        .dockerconfigjson: "{{ _docker_auths_yaml | from_yaml | to_json }}"
+  vars:
+    _docker_auths_yaml: |
+      auths:
+        {{ quay_hostname }}:
+          auth: "{{ _loginpassword | b64encode }}"
+          email: ""
+    _loginpassword: "{{ _login }}:{{ _token }}"
+    _login: "{{ hubble_build_robot_account }}"
+    _token: "{{ _hubble_quay_build_token.token }}"
+
+- name: "Link push secret to builder service account"
+  kubernetes.core.k8s:
+    definition:
+      kind: ServiceAccount
+      metadata:
+        name: builder
+        namespace: "{{ hubble_build_namespace }}"
+      secrets:
+        - name: "{{ hubble_build_push_secret_name }}"
 
 - name: Quay repository to host home-built Hubble image
   quay_repository:

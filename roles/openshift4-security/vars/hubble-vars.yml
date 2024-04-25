@@ -1,5 +1,10 @@
 hubble_build_on_cluster: mgmt.ocp-test.epfl.ch
+hubble_build_namespace: hubble
+hubble_build_service_account: hubble-public
 hubble_build_robot_account_shortname: "builder"
+hubble_build_robot_account: "{{ hubble_quay_organization_name }}+{{ hubble_build_robot_account_shortname }}"
+hubble_build_push_secret_name: >-
+  {{ hubble_build_service_account }}-push
 
 hubble_okd_image_name: okd.epfl-hubble-ui
 
