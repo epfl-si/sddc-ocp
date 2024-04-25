@@ -1,0 +1,18 @@
+{# -*- mode: poly-ansible; -*-
+ #
+ # Expands to the full name of a home-built container image.
+ #
+ # This template is meant to be called from Jinja code to define Ansible variables or
+ # YAML fields; it is *not* meant to be rendered into a file. Hence its name without
+ # an extension.
+ #
+ # ⚠ Despite our best efforts, Jinja insists on taking up the file's final newline.
+ # Caller beware; use `| trim`.
+ #
+ # Expected variables:
+ #
+ #    _image_name    The name of the image i.e. the part that comes after the last slash
+ #    _image_tag     (optional) The tag part that comes after the colon
+ #
+ #}{{ quay_hostname }}/{{ hubble_quay_organization_name }}/{{ _image_name
+}}{% if _image_tag is defined %}:{{ _image_tag }}{% endif -%}

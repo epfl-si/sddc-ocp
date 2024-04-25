@@ -1,0 +1,63 @@
+# Cookie-cutter tasks to build and host a home-made Docker image for Hubble.
+#
+# Expected variables:
+#
+#    _image_name    The name of both the image and the Quay repository
+#    _image_tag     The tag to push to after building (i.e. the `Tag` part of the
+#                   ImageStreamTag); defaults to "latest"
+#    _git_url       The URL to `git clone` the source code from
+#    _git_ref       The branch or tag (in `ref/heads/foo` or `ref/tags/bar` format)
+#                   to build from
+
+- name: Quay repository to host home-built Hubble image
+  quay_repository:
+    organization: "{{ hubble_quay_organization_name }}"
+    name: "{{ _image_name }}"
+    owner: "{{ hubble_quay_service_account_name }}"
+    visibility: public
+    permissions:
+      - state: present
+        role: write
+        subject:
+          robot_account:
+            shortname: "{{ hubble_build_robot_account_shortname }}"
+
+- name: "BuildConfig/{{ _image_name }}"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      metadata:
+        name: "{{ _image_name }}"
+        namespace: "{{ hubble_build_namespace }}"
+      spec:
+        strategy:
+          type: Docker
+        source:
+          type: Git
+          git:
+            uri: "{{ _git_url }}"
+            ref: "{{ _git_ref }}"
+        output:
+          to:
+            kind: DockerImage
+            name: >-
+              {{ lookup("template", "hubble_build_qualified_image_name",
+                        template_vars=dict(_image_name=_image_name,
+                                            _image_tag=_image_tag | default("latest") ))
+                | trim }}
+          pushSecret:
+            name: "{{ hubble_build_push_secret_name }}"
+  register: _this_buildconfig
+
+- name: "Rebuild {{ _image_name }} now"
+  when: >-
+    ((_this_buildconfig | default({})) is changed)
+    or
+    ("openshift.security.hubble.rebuild" in ansible_run_tags)
+  delegate_to: localhost
+  shell:
+    cmd: >-
+      oc --kubeconfig {{ xaasible_kubeconfig }}
+      -n {{ hubble_build_namespace }}
+      start-build --wait {{ _image_name }}
