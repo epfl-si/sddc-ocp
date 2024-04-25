@@ -19,3 +19,5 @@ spoke_clusterimageset_name: >-
   img{{ spoke_clusterimageset_version }}-x86-64-appsub
 
 quay_hostname: si-quay.epfl.ch
+
+hubble_build_namespace: hubble
