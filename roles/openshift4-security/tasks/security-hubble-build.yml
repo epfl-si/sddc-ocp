@@ -57,7 +57,20 @@
 - include_tasks:
     file: _hubble_homebuilt_image.yml
   vars:
-    _image_name: "{{ hubble_okd_image_name }}"
-    _image_tag: "{{ hubble_okd_epfl_version }}"
-    _git_url:    "{{ hubble_okd_git_repository }}"
-    _git_ref:    "refs/tags/v{{ hubble_okd_epfl_version }}"
+    _image_name: "{{ item.image.name }}"
+    _image_tag: "{{ item.image.tag }}"
+    _git_url:    "{{ item.git.url }}"
+    _git_ref:    "{{ item.git.ref | default('refs/heads/master') }}"
+  with_items:
+    - image:
+        name: "{{ hubble_okd_image_name }}"
+        tag: "{{ hubble_okd_epfl_version }}"
+      git:
+        url: "{{ hubble_okd_git_repository }}"
+        ref: "refs/tags/v{{ hubble_okd_epfl_version }}"
+    - image:
+        name: "{{ hubble_ui_image_name }}"
+        tag: "{{ hubble_ui_epfl_version }}"
+      git:
+        url: "{{ hubble_ui_git_repository }}"
+        ref: "refs/tags/{{ hubble_ui_epfl_version }}"

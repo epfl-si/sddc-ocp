@@ -17,3 +17,5 @@ cilium_version: 1.15.3
 # This must match a tag of the same name with v prepended (e.g. `v0.1.5`) in
 # https://github.com/epfl-si/cluster.okd.hubble-ui :
 hubble_okd_epfl_version: 0.1.5
+# Same at https://github.com/epfl-si/hubble-ui-epfl/tags, execpt without prepending a v:
+hubble_ui_epfl_version: epfl-0.2.0
