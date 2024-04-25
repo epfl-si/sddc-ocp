@@ -1,3 +1,6 @@
+- tags: always
+  include_vars: versions.yml
+
 - name: Quay service account for the Hubble UI images
   quay_service_account:
     name: "{{ hubble_quay_service_account_name }}"
@@ -63,3 +66,39 @@
         subject:
           robot_account:
             shortname: "{{ hubble_build_robot_account_shortname }}"
+
+- name: "BuildConfig/{{ hubble_okd_image_name }}"
+  kubernetes.core.k8s:
+    definition:
+      apiVersion: build.openshift.io/v1
+      kind: BuildConfig
+      metadata:
+        name: "{{ hubble_okd_image_name }}"
+        namespace: "{{ hubble_build_namespace }}"
+      spec:
+        strategy:
+          type: Docker
+        source:
+          type: Git
+          git:
+            uri: "{{ hubble_okd_git_repository }}"
+            ref: "refs/tags/v{{ hubble_okd_epfl_version }}"
+        output:
+          to:
+            kind: DockerImage
+            name: "{{ hubble_okd_qualified_image }}"
+          pushSecret:
+            name: "{{ hubble_build_push_secret_name }}"
+  register: _hubble_buildconfig
+
+- name: "Rebuild {{ hubble_okd_image_name }} now"
+  when: >-
+    ((_hubble_buildconfig | default({})) is changed)
+    or
+    ("openshift.security.hubble.rebuild" in ansible_run_tags)
+  delegate_to: localhost
+  shell:
+    cmd: >-
+      oc --kubeconfig {{ xaasible_kubeconfig }}
+      -n {{ hubble_build_namespace }}
+      start-build --wait {{ hubble_okd_image_name }}

@@ -38,8 +38,10 @@
         - openshift.security
         - openshift.security.hubble
         - openshift.security.hubble.build
+        - openshift.security.hubble.rebuild
   tags:
     - openshift
     - openshift.security
     - openshift.security.hubble
     - openshift.security.hubble.build
+    - openshift.security.hubble.rebuild

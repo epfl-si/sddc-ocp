@@ -6,8 +6,11 @@ hubble_build_robot_account: "{{ hubble_quay_organization_name }}+{{ hubble_build
 hubble_build_push_secret_name: >-
   {{ hubble_build_service_account }}-push
 
-hubble_okd_image_name: okd.epfl-hubble-ui
-
 hubble_quay_organization_name: hubble-public
 hubble_quay_service_account_name: si-quay-hubble
 
+hubble_okd_image_name: okd.epfl-hubble-ui
+hubble_okd_git_repository: https://github.com/epfl-si/cluster.okd.hubble-ui
+# hubble_okd_epfl_version comes from ../../../vars/versions.yml
+hubble_okd_qualified_image: >-
+  {{ quay_hostname }}/{{ hubble_quay_organization_name }}/{{ hubble_okd_image_name }}:{{ hubble_okd_epfl_version }}
