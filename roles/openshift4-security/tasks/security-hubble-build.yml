@@ -54,6 +54,12 @@
       secrets:
         - name: "{{ hubble_build_push_secret_name }}"
 
+- name: "Delete old image"
+  quay_repository:
+    organization: "{{ hubble_quay_organization_name }}"
+    name: "hubble-api-proxy"
+    state: absent
+
 - include_tasks:
     file: _hubble_homebuilt_image.yml
   vars:

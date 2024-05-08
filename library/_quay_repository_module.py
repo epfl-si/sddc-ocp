@@ -8,7 +8,13 @@ from ansible_collections.epfl_si.actions.plugins.module_utils.postconditions imp
 from ansible.module_utils.flask import run_flask_postcondition
 
 
-class QuayRepositoryCreatedPostcondition(Postcondition):
+class _QuayRepositoryPostconditionBase(Postcondition):
+    @property
+    def _exists (self):
+        from data.model.repository import get_repository
+        return get_repository(self.organization, self.name) is not None
+
+class QuayRepositoryCreatedPostcondition(_QuayRepositoryPostconditionBase):
     def __init__(self,  organization, name, owner, visibility, permissions):
         self.organization = organization
         self.name = name
@@ -18,11 +24,6 @@ class QuayRepositoryCreatedPostcondition(Postcondition):
 
     def holds(self):
         return self._exists and self._permissions_match
-
-    @property
-    def _exists(self):
-        from data.model.repository import get_repository
-        return get_repository(self.organization, self.name) is not None
 
     @property
     def _permissions_match(self):
@@ -131,18 +132,19 @@ class _QuayRepositoryRobotAccountSubject (_QuayRepositorySubject):
                                self.repository)
 
 
-class QuayRepositoryDeletedPostcondition(Postcondition):
-    def __init__(self,  organization, name):
+class QuayRepositoryDeletedPostcondition(_QuayRepositoryPostconditionBase):
+    def __init__ (self,  organization, name):
         self.organization = organization
         self.name = name
 
-    def holds(self):
+    def holds (self):
+        from data.model.repository import get_repository
         return not self._exists
 
-    def enforce(self):
-        from data.model.user import User, delete_user
-        delete_user(User.get(User.username == self.name), [])
-        return dict(changed="Deleted organization %s" % self.name)
+    def enforce (self):
+        from data.model.repository import mark_repository_for_deletion
+        from app import repository_gc_queue
+        mark_repository_for_deletion(self.organization, self.name, repository_gc_queue)
 
 
 class QuayRepositoryTask(object):
