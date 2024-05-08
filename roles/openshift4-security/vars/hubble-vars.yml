@@ -15,6 +15,8 @@ hubble_okd_git_repository: https://github.com/epfl-si/cluster.okd.hubble-ui
 hubble_ui_image_name: hubble-ui-epfl
 hubble_ui_git_repository: https://github.com/epfl-si/hubble-ui-epfl
 
+hubble_api_token_reflector_image_name: hubble-api-token-reflector
+
 # hubble_build_namespace comes from ../../../vars/openshift-vars.yml
 hubble_namespace: "{{ hubble_build_namespace }}"
 
@@ -37,6 +39,12 @@ hubble_ui_qualified_image: >-
   {{ lookup("template", "hubble_build_qualified_image_name",
             template_vars=dict(_image_name=hubble_ui_image_name,
                                _image_tag=hubble_ui_epfl_version))
+     | trim }}
+
+hubble_api_token_reflector_qualified_image: >-
+  {{ lookup("template", "hubble_build_qualified_image_name",
+            template_vars=dict(_image_name=hubble_api_token_reflector_image_name,
+                               _image_tag=hubble_okd_epfl_version))
      | trim }}
 
 hubble_ui_route_hostname: "hubble-ui.apps.{{ inventory_hostname }}"

@@ -8,6 +8,7 @@
 #    _git_url       The URL to `git clone` the source code from
 #    _git_ref       The branch or tag (in `ref/heads/foo` or `ref/tags/bar` format)
 #                   to build from
+#    _git_path      The path to the Dockerfile in the git repository (optional)
 
 - name: Quay repository to host home-built Hubble image
   quay_repository:
@@ -35,6 +36,7 @@
           type: Docker
         source:
           type: Git
+          contextDir: "{{ _git_path | default(None) }}"
           git:
             uri: "{{ _git_url }}"
             ref: "{{ _git_ref }}"

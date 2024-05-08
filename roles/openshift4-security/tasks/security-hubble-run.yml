@@ -29,3 +29,5 @@
         hostname: "{{ hubble_ui_route_hostname }}"
       hubbleAPI:
         accessList: "{{ access_list_to_hubble_ui }}"
+        tokenReflector:
+          image: "{{ hubble_api_token_reflector_qualified_image }}"
