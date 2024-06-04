@@ -175,8 +175,6 @@ log_in_to_cluster__bastion () {
     local fqdn=$1; shift
     local cluster="$(cluster_of_fqdn "$fqdn")"
 
-    set -x
-
     local keybase_password_store="/keybase/team/epfl_idevfsd/INC0634627/kubeadmin-passwords.json"
     local saved_username="$( jq -r ".[\"$fqdn\"].user"     < $keybase_password_store || true )"
     local saved_password="$( jq -r ".[\"$fqdn\"].password" < $keybase_password_store || true )"
