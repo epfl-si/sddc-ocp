@@ -44,6 +44,7 @@
   gather_facts: no
   pre_tasks:
     - tags: always   # There is a `tag: always` task down below in the role
+      run_once: true
       xaasctl_login_cluster:
         to_cluster: "{{ inventory_hub_cluster }}"
   roles:

@@ -7,16 +7,25 @@
       mkdir -p {{ xaasible_cache_dir }} || true
       touch {{ xaasible_cache_dir }}/xaasctl-inventory.sh
 
+- name: Obtain API server and application (ingress) certificates
+  changed_when: false
+  shell: |
+    set -e -x
+    for uri in "{{ _oauth_fqdn }}:443" "{{ _apiserver_fqdn }}:6443"; do
+      spew="$(openssl s_client -verify_quiet -showcerts \
+              -connect $uri < /dev/null)"
+      echo "$spew" | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p'
+    done
+  register: _hub_api_and_ingress_certificates
+  vars:
+    _oauth_fqdn: "oauth-openshift.apps.{{ inventory_hostname }}"
+    _apiserver_fqdn: "api.{{ inventory_hostname }}"
+
+
 - name: "{{ cluster_local_ca_bundle_file }}"
   copy:
     dest: "{{ cluster_local_ca_bundle_file }}"
-    content: >-
-      {{ lookup("pipe",
-      "ssh -o strictHostKeyChecking=no root@{{ ansible_host }}
-      yq .clusters.0.cluster.certificate-authority-data
-      {{ bootstrap_ocp_config_dir }}/auth/kubeconfig
-      | base64 -d"
-      ) }}
+    content: "{{ _hub_api_and_ingress_certificates.stdout }}"
 
 - name: Update xaasible-state-cache/xaasctl-inventory.sh with findings from this role
   blockinfile:
