@@ -174,7 +174,18 @@ log_in_to_cluster__spoke () {
 log_in_to_cluster__bastion () {
     local fqdn=$1; shift
     local cluster="$(cluster_of_fqdn "$fqdn")"
-    local token=$(ssh_bastion_in_cluster_dir "$fqdn" 'curl -v -k --user kubeadmin:$(cat auth/kubeadmin-password) --header "X-CSRF-Token: 1" --url '"$(cluster_openshift_basicauth_endpoint "$fqdn" | sed 's/&/\\&/')"' 2>&1 | grep -o "access_token=[^\&]*" |cut -d= -f2')
+
+    set -x
+
+    local keybase_password_store="/keybase/team/epfl_idevfsd/INC0634627/kubeadmin-passwords.json"
+    local saved_username="$( jq -r ".[\"$fqdn\"].user"     < $keybase_password_store || true )"
+    local saved_password="$( jq -r ".[\"$fqdn\"].password" < $keybase_password_store || true )"
+    if [ -n "$saved_username" ]; then
+        local url="$(cluster_openshift_basicauth_endpoint "$fqdn")"
+        local token="$(curl -v -k --user "$saved_username:$saved_password" --header "X-CSRF-Token: 1" --url $url 2>&1 | grep -o "access_token=[^&]*" |cut -d= -f2)"
+    else
+        local token=$(ssh_bastion_in_cluster_dir "$fqdn" 'curl -v -k --user kubeadmin:$(cat auth/kubeadmin-password) --header "X-CSRF-Token: 1" --url '"$(cluster_openshift_basicauth_endpoint "$fqdn" | sed 's/&/\\&/')"' 2>&1 | grep -o "access_token=[^\&]*" |cut -d= -f2')
+    fi
     local server="$(cluster_k8s_api_endpoint "$fqdn")"
     local ca_bundle="$(eval "cluster_${cluster}_ca_bundle")"
     oc login --certificate-authority="$ca_bundle" --token="$token" --server="$server"
