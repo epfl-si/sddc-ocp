@@ -35,7 +35,15 @@
     - bastion.vm
 
 - name: "Encache bastion VM IP"
-  tags: always
+  tags:
+    - bastion
+    - bastion.vm
+    - bastion.access
+    - bastion.ca
+    - bastion.CA
+    - bastion.motd
+    - bastion.xaasctl
+    - all.xaasctl
   set_fact:
     ansible_host: "{{ ansible_host }}"
 
